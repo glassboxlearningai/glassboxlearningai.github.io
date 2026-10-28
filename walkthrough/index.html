@@ -1,0 +1,1645 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="A Week with Maya: the story-based walkthrough of the Glass-Box classroom AI used in parent and teacher focus groups, October 2026.">
+<title>A Week with Maya</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=Kalam:wght@400;700&display=swap">
+<style>
+/* Layout: a fixed 1600×900 stage scaled to the window. Each stop = a week strip + one app window
+   (or Maya's paper journal); the last step shrinks it left and brings the Zoom-chat prompt in on the right.
+   Single committed look (dark surround, light stage) so it reads the same on every screen share. */
+:root{
+  color-scheme: dark;
+  --surround:#0E1417;
+  --stage:#F2F5F5;
+  --ink:#14212A;
+  --text:#1D2A31;
+  --muted:#586870;
+  --line:#CAD5D8;
+  --line-soft:#DDE6E8;
+  --white:#FFFFFF;
+  --teal:#0C5A66;
+  --teal-2:#12808F;
+  --teal-wash:#E1EFF1;
+  --teal-ghost:#F2F8F8;
+  --amber:#9A6116;
+  --amber-2:#D08E2C;
+  --amber-wash:#F8ECD6;
+  --held:#2C7A57;
+  --held-wash:#E6F2EA;
+  --gap:#1B5E86;
+  --gap-wash:#E5EFF5;
+  --lib:#5F4B8B;
+  --lib-wash:#EEEAF6;
+  --paper:#FCFBF6;
+  --paper-edge:#E4E0D2;
+  --graphite:#3B4247;
+  --pencil-green:#3F7A32;
+  --pencil-blue:#2F6DA6;
+  --leaf-wash:#E7F0DF;
+  --velcro:#E6E1D3;
+  --neutral-1:#E9EDEF;
+  --neutral-2:#D9E0E3;
+  --chrome:#172127;
+  --chrome-line:#2B3940;
+  --chrome-text:#C9D5DA;
+  --chrome-dim:#8FA2AA;
+  --display:"Bricolage Grotesque","Atkinson Hyperlegible",system-ui,sans-serif;
+  --body:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --hand:"Kalam","Segoe Print","Comic Sans MS",cursive;
+}
+html,body{height:100%}
+body{margin:0;background:var(--surround);color:var(--text);font-family:var(--body);overflow:hidden}
+#viewport{position:fixed;inset:0;overflow:hidden}
+#stage{position:absolute;top:0;left:0;width:1600px;height:900px;transform-origin:0 0;background:var(--stage);border-radius:8px;overflow:hidden;box-shadow:0 30px 80px -20px rgba(0,0,0,.6)}
+.slide{position:absolute;inset:0;opacity:0;visibility:hidden;transition:opacity .35s ease,visibility 0s linear .35s}
+.slide.active{opacity:1;visibility:visible;transition:opacity .35s ease}
+[data-s],[data-until]{transition:opacity .45s ease,transform .45s ease}
+.pending{opacity:0!important;visibility:hidden;transform:translateY(10px)}
+.collapse.pending{display:none!important}
+.layer{position:absolute!important;inset:0;height:auto!important}
+.stack10{display:flex;flex-direction:column;gap:10px}
+
+.eyebrow{margin:0;font:600 15px/1.2 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--teal-2)}
+h1,h2,h3,h4,h5{text-wrap:balance}
+
+/* ---------- stop header + week strip ---------- */
+.stophead{position:absolute;left:40px;right:40px;top:24px;height:104px;display:flex;align-items:flex-end;justify-content:space-between;gap:32px}
+.stoptitle{min-width:0}
+.stoptitle .eyebrow{margin-bottom:6px}
+.stoptitle h2{margin:0;font:800 46px/1 var(--display);letter-spacing:-.015em;color:var(--ink)}
+.stoptitle .sub{margin:9px 0 0;font-size:19px;color:var(--muted)}
+.headnote{margin:0 0 4px;font-size:21px;color:var(--muted);max-width:520px;text-align:right}
+.week{display:flex;gap:6px;list-style:none;margin:0 0 2px;padding:0;flex:none}
+.week li{width:118px;padding:8px 12px 9px;border-radius:10px;border:1.5px solid var(--line);background:var(--white);font:600 12px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.week li b{display:block;margin-top:5px;font:700 16px/1.15 var(--body);letter-spacing:0;text-transform:none;color:var(--text)}
+.week li.done{background:var(--teal-ghost);border-color:#BFD9DC}
+.week li.now{background:var(--teal);border-color:var(--teal);color:#BFE0E5}
+.week li.now b{color:#fff}
+.week li.later{border-style:dashed;background:transparent;opacity:.7}
+
+/* ---------- main area + reaction card ---------- */
+.main{position:absolute;left:40px;top:140px;width:1520px;height:730px;transform-origin:0 0;transition:transform .6s cubic-bezier(.2,.7,.2,1)}
+.slide.react .main{transform:translate(0,138px) scale(.58)}
+.react-card{position:absolute;left:958px;top:172px;width:602px;min-height:560px;box-sizing:border-box;background:var(--ink);color:#E4EEF1;border-radius:22px;padding:40px 44px 34px;display:flex;flex-direction:column;gap:18px;box-shadow:0 30px 60px -25px rgba(10,30,40,.55)}
+.react-card.pending{transform:translateX(40px)}
+.rc-eye{margin:0;display:flex;align-items:center;gap:10px;font:600 14px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:#7FD0DA}
+.rc-eye svg{width:22px;height:22px;color:#7FD0DA}
+.rc-lead{margin:0;font-size:22px;color:#B9CBD1}
+.rc-q{margin:6px 0 0;font:700 42px/1.12 var(--display);letter-spacing:-.01em;color:#fff}
+.rc-list{margin:4px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:22px;counter-reset:q}
+.rc-list li{display:grid;grid-template-columns:44px 1fr;gap:14px;font:700 33px/1.15 var(--display);color:#fff;counter-increment:q}
+.rc-list li::before{content:counter(q);display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:#24343D;color:#7FD0DA;font:600 20px var(--mono)}
+.rc-split{display:flex;flex-direction:column;gap:22px;margin-top:4px}
+.rc-split div{border-left:4px solid var(--amber-2);padding-left:18px}
+.rc-split span{display:block;font:600 13px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:#E8B66A;margin-bottom:6px}
+.rc-split h3{margin:0;font:700 32px/1.15 var(--display);color:#fff}
+.react-timer{margin-top:auto;height:6px;background:#2A3942;border-radius:3px;overflow:hidden}
+.react-timer span{display:block;height:100%;background:var(--amber-2);transform-origin:left center}
+.react-timer span.run{animation:drain 60s linear forwards}
+@keyframes drain{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+.rc-foot{margin:-6px 0 0;font:500 13px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:#7F959D}
+
+/* ---------- welcome ---------- */
+.welcome{position:absolute;inset:0}
+.w-text{position:absolute;left:84px;top:118px;width:780px}
+.w-text h1{margin:18px 0 0;font:800 116px/.92 var(--display);letter-spacing:-.035em;color:var(--ink)}
+.w-text h1 em{font-style:normal;color:var(--teal-2)}
+.w-lede{margin:26px 0 0;font-size:29px;line-height:1.35;color:var(--muted);max-width:620px}
+.w-art{position:absolute;left:820px;top:44px;width:560px;height:auto;opacity:.95}
+.w-bot{position:absolute;right:56px;top:300px;width:200px;height:300px}
+.w-cards{position:absolute;left:84px;right:84px;bottom:64px;display:grid;grid-template-columns:repeat(3,1fr);gap:22px;list-style:none;margin:0;padding:0}
+.w-cards li{background:var(--white);border:1.5px solid var(--line-soft);border-radius:16px;padding:22px 26px}
+.w-cards h3{margin:0 0 8px;font:700 24px/1.15 var(--display);color:var(--ink)}
+.w-cards p{margin:0;font-size:19px;line-height:1.4;color:var(--muted)}
+
+/* ---------- goals + why-feedback ---------- */
+.intro-wrap{position:absolute;left:84px;right:84px;top:92px}
+.intro-wrap .lede{margin:18px 0 0;font-size:26px;line-height:1.4;color:var(--muted);max-width:1120px}
+.goals{list-style:none;margin:44px 0 0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:26px}
+.goals li{background:var(--white);border:1.5px solid var(--line-soft);border-radius:18px;padding:26px 30px 30px;display:flex;flex-direction:column;gap:12px}
+.goal-art{height:104px;display:flex;align-items:center;gap:14px}
+.goal-art svg{height:100%;width:auto}
+.goals .gn{font:600 14px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--teal-2)}
+.goals h3{margin:0;font:800 33px/1.06 var(--display);letter-spacing:-.01em;color:var(--ink)}
+.goals p{margin:0;font-size:21px;line-height:1.42;color:var(--text)}
+.why{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px;margin-top:52px}
+.why > div{background:var(--white);border:1.5px solid var(--line-soft);border-radius:20px;padding:34px 38px 38px;display:flex;flex-direction:column;gap:14px}
+.why-ic{display:grid;place-items:center;width:76px;height:76px;border-radius:20px;background:var(--teal-wash);color:var(--teal)}
+.why-ic svg{width:42px;height:42px}
+.why > div:nth-child(2) .why-ic{background:var(--amber-wash);color:var(--amber)}
+.why h3{margin:6px 0 0;font:800 40px/1.05 var(--display);letter-spacing:-.015em;color:var(--ink)}
+.why p{margin:0;font-size:24px;line-height:1.45;color:var(--text)}
+.why-foot{margin:36px 0 0;font-size:23px;color:var(--muted)}
+
+/* ---------- how it works ---------- */
+.how{position:absolute;left:84px;right:84px;top:150px}
+.big{margin:14px 0 0;font:800 64px/1 var(--display);letter-spacing:-.025em;color:var(--ink)}
+.rhythm{list-style:none;margin:56px 0 0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:26px}
+.rhythm li{background:var(--white);border:1.5px solid var(--line-soft);border-radius:18px;padding:30px 32px 32px;display:flex;flex-direction:column;gap:10px}
+.rhythm .n{display:grid;place-items:center;width:52px;height:52px;border-radius:50%;background:var(--teal);color:#fff;font:600 24px var(--mono)}
+.rhythm h3{margin:10px 0 0;font:800 40px/1 var(--display);color:var(--ink)}
+.rhythm .t{margin:0;font:600 14px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--teal-2)}
+.rhythm p{margin:0;font-size:21px;line-height:1.42;color:var(--text)}
+.rhythm li:nth-child(2){border-color:var(--amber-2);box-shadow:0 0 0 3px var(--amber-wash)}
+.rhythm li:nth-child(2) .n{background:var(--amber-2)}
+.how-foot{margin:44px 0 0;font-size:23px;color:var(--muted)}
+
+/* ---------- two tutors ---------- */
+.tutors{display:flex;flex-direction:column;gap:16px}
+.shared{align-self:center;width:860px;background:var(--neutral-2);border-radius:16px;padding:14px 20px}
+.shared .who,.lane .who{display:block;font:600 12px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.shared p{margin:0;font-size:21px;line-height:1.4}
+.lanes{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.lane{background:var(--white);border:1.5px solid var(--line);border-radius:16px;display:flex;flex-direction:column;min-width:0;overflow:hidden}
+.lane-h{display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1.5px solid var(--line-soft);background:var(--neutral-1);font:700 21px var(--display);color:var(--ink)}
+.tav{display:grid;place-items:center;width:34px;height:34px;border-radius:9px;background:#8C9AA1;color:#fff;font:600 17px var(--mono)}
+.lane-b{padding:16px 18px;display:flex;flex-direction:column;gap:11px}
+.tb{border-radius:14px;padding:11px 15px;font-size:18.5px;line-height:1.4;max-width:92%}
+.tb p{margin:0}.tb p+p,.tb ol{margin-top:6px}
+.tb ol{margin-bottom:0;padding-left:26px}
+.tb.tutor{background:var(--neutral-1);border-top-left-radius:4px}
+.tb.student{align-self:flex-end;background:#C9D3D7;border-top-right-radius:4px}
+
+/* ---------- stickers ---------- */
+.stk{display:grid;place-items:center;width:56px;height:56px;border-radius:50%;color:#fff;font:800 26px/1 var(--display);box-shadow:0 0 0 3px #fff,0 3px 10px rgba(0,0,0,.28);flex:none}
+.stk.s1{background:#3F7A32}.stk.s2{background:#12808F}.stk.s3{background:#D08E2C}.stk.s4{background:#5F4B8B}.stk.s5{background:#14212A}
+.stk.sm{width:40px;height:40px;font-size:19px;box-shadow:0 0 0 2.5px #fff,0 2px 6px rgba(0,0,0,.22)}
+
+/* ---------- Maya's week overview ---------- */
+.wk{position:absolute;left:84px;right:84px;top:64px}
+.wk .lede{margin:16px 0 0;font-size:24px;line-height:1.4;color:var(--muted);max-width:1100px}
+.days{list-style:none;margin:48px 0 0;padding:0;display:grid;grid-template-columns:repeat(5,1fr);gap:18px}
+.day{position:relative;background:var(--white);border:1.5px solid var(--line-soft);border-radius:18px;padding:20px 20px 18px;display:flex;flex-direction:column;gap:9px;min-height:420px;box-sizing:border-box}
+.day-top{display:flex;align-items:center;gap:12px}
+.day .d{font:600 13px/1.3 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.day h3{margin:4px 0 0;font:800 27px/1.05 var(--display);color:var(--ink)}
+.day p{margin:0;font-size:18px;line-height:1.4;color:var(--text)}
+.day .hw{font-size:16px;color:var(--muted);border-top:1.5px dashed var(--line);padding-top:9px}
+.day .hw b{display:block;font:600 11.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--pencil-green);margin-bottom:3px}
+.chip{margin-top:auto;align-self:flex-start;display:inline-flex;align-items:center;gap:7px;font:600 12.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;padding:6px 10px;border-radius:8px}
+.chip.hands{background:var(--leaf-wash);color:var(--pencil-green)}
+.chip.ai{background:var(--teal-wash);color:var(--teal)}
+.chip svg{width:16px;height:16px}
+.stopflag{position:absolute;top:-13px;right:16px;background:var(--ink);color:#fff;font:600 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;padding:5px 10px;border-radius:99px}
+.day.off{background:transparent;border-style:dashed}
+.wk-foot{margin:30px 0 0;font-size:22px;color:var(--muted)}
+.wk-foot b{color:var(--ink)}
+
+/* ---------- field journal ---------- */
+.journal{display:grid;grid-template-columns:1fr 1fr;height:100%;background:var(--paper);border-radius:10px;box-shadow:0 26px 50px -24px rgba(50,45,20,.45),0 0 0 1.5px var(--paper-edge);position:relative;overflow:hidden}
+.journal::after{content:"";position:absolute;top:0;bottom:0;left:50%;width:70px;margin-left:-35px;background:linear-gradient(90deg,transparent,rgba(70,62,30,.09) 42%,rgba(70,62,30,.17) 50%,rgba(70,62,30,.09) 58%,transparent);pointer-events:none}
+.jpage{position:relative;padding:26px 44px;background-color:var(--paper);background-image:radial-gradient(circle,rgba(90,110,100,.2) 1.3px,transparent 1.7px);background-size:28px 28px;min-width:0}
+.jpage.withstrip{padding-right:112px}
+.jhead{display:flex;justify-content:space-between;align-items:baseline;font:600 13px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.hand{font-family:var(--hand)}
+.jhead .hand{font-size:27px;font-weight:700;letter-spacing:0;text-transform:none;color:var(--graphite)}
+.sketch{display:block;width:100%;height:auto;margin-top:4px}
+.jmeta{display:flex;flex-wrap:wrap;gap:4px 26px;padding-bottom:12px;border-bottom:1.5px dashed rgba(59,66,71,.28)}
+.jmeta span{font:600 12.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.jmeta .hand{margin-left:6px;font-size:25px;font-weight:400;letter-spacing:0;text-transform:none;color:var(--graphite)}
+.prompt{padding-top:14px}
+.plabel{font:600 14px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--teal)}
+.lines{margin-top:2px;min-height:102px;background-image:linear-gradient(transparent 32px,rgba(47,109,166,.24) 32px,rgba(47,109,166,.24) 33.5px,transparent 33.5px);background-size:100% 34px}
+.lines p{margin:0;font:400 25px/34px var(--hand);color:var(--graphite)}
+.strip{position:absolute;top:26px;right:22px;bottom:26px;width:72px;display:flex;flex-direction:column;align-items:center;gap:10px;padding-top:4px;border-left:1.5px dashed rgba(59,66,71,.22)}
+.strip-h{font:600 10.5px/1.25 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:center;margin-left:8px}
+.slot{position:relative;margin-left:8px;width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background-color:var(--velcro);background-image:radial-gradient(circle,rgba(70,64,48,.34) .9px,transparent 1.3px);background-size:4px 4px;border:1.5px dashed #B5AE9A}
+.slot em{position:absolute;bottom:-17px;font:600 11px var(--mono);font-style:normal;color:var(--muted);letter-spacing:.06em}
+.slot .stk{width:52px;height:52px;font-size:24px}
+.slot+.slot{margin-top:12px}
+
+/* journal stack (Tuesday) */
+.jstack{position:relative;height:100%}
+.jback{position:absolute;left:110px;top:34px;width:690px;height:650px;box-sizing:border-box;transform:rotate(-3.5deg);box-shadow:0 18px 40px -22px rgba(50,45,20,.5),0 0 0 1.5px var(--paper-edge);border-radius:8px;overflow:hidden}
+.jfront{position:absolute;left:640px;top:0;width:800px;height:730px;box-sizing:border-box;box-shadow:0 26px 50px -24px rgba(50,45,20,.5),0 0 0 1.5px var(--paper-edge);border-radius:8px}
+.hw-title{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding-bottom:10px;border-bottom:1.5px dashed rgba(59,66,71,.28)}
+.hw-title .hand{font-family:var(--hand);font-size:40px;font-weight:700;letter-spacing:0;text-transform:none;color:var(--graphite);line-height:1}
+.hw-title span{font:600 12.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--pencil-green)}
+.entry{display:grid;grid-template-columns:34px 1fr;gap:6px;padding-top:14px}
+.entry .no{font:700 28px/34px var(--hand);color:var(--pencil-green)}
+.entry .lines{min-height:0}
+.entry .lines p{font-size:24px}
+.entry .lines p b{font-weight:700;color:var(--pencil-green)}
+.wish{position:absolute;right:34px;bottom:130px;transform:rotate(-6deg);font:700 28px var(--hand);color:var(--pencil-blue)}
+
+/* ---------- app windows ---------- */
+.device{position:relative;height:100%;box-sizing:border-box;background:var(--white);border:1.5px solid var(--line);border-radius:18px;box-shadow:0 22px 50px -24px rgba(12,40,50,.4);display:flex;flex-direction:column;overflow:hidden}
+.dev-bar{flex:none;display:flex;align-items:center;gap:24px;padding:11px 22px;border-bottom:1.5px solid var(--line-soft);background:var(--teal-ghost)}
+.app-id{display:flex;flex-direction:column;gap:4px;flex:none}
+.app-id b{font:700 20px/1.1 var(--display);color:var(--ink)}
+.app-id span{font:500 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.user{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px;color:var(--text);flex:none}
+.user i{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:var(--teal);color:#fff;font:700 16px var(--body);font-style:normal}
+.user i.tch{background:#5F4B8B}
+.progress{flex:1;min-width:0;display:flex;align-items:center;gap:22px}
+.lvwrap{flex:none;display:flex;flex-direction:column;gap:5px}
+.lvlabel{font:600 11.5px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.lvlabel b{color:var(--ink)}
+.lvls{display:flex;gap:5px;list-style:none;margin:0;padding:0}
+.lvls li{display:grid;place-items:center;width:30px;height:30px;border-radius:8px;border:2px solid var(--line);background:var(--white);font:700 15px var(--mono);color:var(--muted);transition:all .4s}
+.lvls li.done{background:var(--teal-2);border-color:var(--teal-2);color:#fff}
+.lvls li.now{background:var(--amber-wash);border-color:var(--amber-2);color:var(--ink)}
+.chapters{flex:1;min-width:0;display:flex;list-style:none;margin:0;padding:0;border-left:1.5px solid var(--line-soft);padding-left:10px}
+.chapters li{flex:1;position:relative;padding-top:28px;text-align:center;font-size:14.5px;color:var(--muted);white-space:nowrap}
+.chapters li::before{content:"";position:absolute;top:5px;left:50%;width:16px;height:16px;margin-left:-8px;box-sizing:border-box;border-radius:50%;background:var(--white);border:2px solid var(--line);z-index:1;transition:all .4s}
+.chapters li::after{content:"";position:absolute;top:12px;left:-50%;width:100%;height:2px;background:var(--line);transition:background .4s}
+.chapters li:first-child::after{display:none}
+.chapters li.done::before{background:var(--teal-2);border-color:var(--teal-2)}
+.chapters li.done::after,.chapters li.now::after{background:var(--teal-2)}
+.chapters li.now{color:var(--ink);font-weight:700}
+.chapters li.now::before{top:1px;width:24px;height:24px;margin-left:-12px;background:var(--amber-wash);border:4px solid var(--amber-2)}
+.dev-body{flex:1;min-height:0;display:grid;grid-template-rows:minmax(0,1fr);position:relative}
+
+/* chat */
+.chat{position:relative;padding:22px 26px;display:flex;flex-direction:column;gap:14px;overflow:hidden;min-width:0;-webkit-mask-image:linear-gradient(transparent 0,#000 34px);mask-image:linear-gradient(transparent 0,#000 34px)}
+.turn{display:flex;gap:12px;align-items:flex-start;max-width:90%}
+.turn.me{align-self:flex-end;flex-direction:row-reverse}
+.bw{display:flex;flex-direction:column;gap:5px;min-width:0}
+.turn.me .bw{align-items:flex-end}
+.who{font:600 12px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.av{width:42px;height:42px;flex:none}
+i.av{display:grid;place-items:center;border-radius:50%;background:var(--teal);color:#fff;font:700 17px var(--body);font-style:normal}
+.bubble{padding:11px 16px;border-radius:16px;font-size:19.5px;line-height:1.42}
+.bubble p{margin:0}.bubble p+p,.bubble p+.cansee,.cansee+p{margin-top:9px}
+.bot .bubble{background:var(--teal-ghost);border:1.5px solid #C8DFE2;border-top-left-radius:4px;color:var(--text)}
+.me .bubble{background:var(--teal);color:#fff;border-top-right-radius:4px}
+.turn.intro{align-items:flex-end;max-width:94%}
+.turn.intro .rb-full{width:118px;height:177px;flex:none;margin-bottom:-6px}
+.turn.intro .bubble{border-bottom-left-radius:4px;border-top-left-radius:16px}
+.sys{align-self:center;font:600 12.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--neutral-1);padding:5px 12px;border-radius:99px}
+.cansee{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cansee div{background:var(--white);border:1.5px solid var(--line-soft);border-radius:10px;padding:9px 12px;font-size:17.5px;line-height:1.35}
+.cansee b{display:flex;align-items:center;gap:6px;margin-bottom:4px;font:600 12.5px var(--mono);letter-spacing:.08em;text-transform:uppercase}
+.cansee svg{width:18px;height:18px}
+.cansee .yes b{color:var(--teal)}.cansee .no b{color:var(--amber)}
+.attach{display:flex;gap:10px;justify-content:flex-end;margin-bottom:10px}
+.attach figure{margin:0}
+.attach img,.attach svg{display:block;width:168px;height:126px;border-radius:8px;object-fit:cover;background:#2F3B2A}
+.attach svg{width:146px;background:var(--paper)}
+.attach figcaption{margin-top:5px;font:600 11.5px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:#BFE0E5;text-align:center}
+
+/* stop 2: dashboard + x-ray */
+.lay2{grid-template-columns:1fr 530px}
+.dash{border-left:1.5px solid var(--line-soft);background:#FAFCFC;padding:18px 24px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.dash-h{display:flex;justify-content:space-between;align-items:center}
+.dash-h b{font:700 21px var(--display);color:var(--ink)}
+.power{font:600 12px var(--mono);letter-spacing:.12em;text-transform:uppercase;padding:5px 11px;border-radius:99px;background:var(--neutral-1);color:var(--muted);transition:all .4s}
+.power .p-on{display:none}
+.dash.lit .power{background:var(--teal);color:#fff}
+.dash.lit .power .p-on{display:inline}.dash.lit .power .p-off{display:none}
+.gauge{border:1.5px solid var(--line-soft);border-radius:12px;padding:12px 16px 13px;background:var(--white);transition:opacity .6s,filter .6s}
+.dash:not(.lit) .gauge,.dash:not(.lit) .xbtn{opacity:.32;filter:grayscale(1)}
+.gauge h4{margin:0 0 9px;font:600 13px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--teal)}
+.sure{display:grid;grid-template-columns:1fr auto;gap:3px 14px;align-items:center}
+.sure+.sure{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line-soft)}
+.claim{font-size:17px;line-height:1.3}
+.meter{display:flex;gap:4px}
+.meter i{width:24px;height:14px;border-radius:3px;background:var(--neutral-2);transition:background .5s}
+.dash.lit .meter i.f{background:var(--teal-2)}
+.dash.lit .meter.low i.f{background:var(--amber-2)}
+.verdict{grid-column:1/-1;font-size:15px;color:var(--muted)}
+.verdict b{color:var(--ink)}
+.usechips{display:flex;flex-wrap:wrap;gap:6px}
+.usechips span{display:inline-flex;align-items:center;gap:6px;font-size:15px;background:var(--teal-ghost);border:1.5px solid #CBE1E4;border-radius:8px;padding:4px 9px}
+.usechips svg{width:16px;height:16px;color:var(--teal-2)}
+.senses{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.sense{border-radius:10px;padding:8px 6px;text-align:center;font-size:15px;line-height:1.2}
+.sense b{display:block;font:600 11.5px var(--mono);letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px}
+.sense.has{background:var(--teal-ghost);border:1.5px solid #CBE1E4}
+.sense.has b{color:var(--teal)}
+.sense.none{border:1.5px dashed var(--amber-2);color:var(--muted)}
+.sense.none b{color:var(--amber)}
+.senses-note{margin:8px 0 0;font-size:15px;color:var(--muted)}
+.xbtn{display:flex;align-items:center;gap:14px;border:2px dashed var(--teal-2);border-radius:12px;padding:10px 16px;background:var(--white);color:var(--teal);transition:all .4s}
+.xbtn svg{width:40px;height:26px;flex:none}
+.xbtn b{display:block;font:700 18px/1.15 var(--display)}
+.xbtn span{font-size:14.5px;color:var(--muted)}
+.xbtn.lit{background:var(--teal);border-style:solid;color:#fff}
+.xbtn.lit span{color:#BFE0E5}
+.xray{position:absolute;top:0;right:0;bottom:0;width:830px;box-sizing:border-box;background-color:#EDF6F7;background-image:linear-gradient(rgba(18,128,143,.09) 1px,transparent 1px),linear-gradient(90deg,rgba(18,128,143,.09) 1px,transparent 1px);background-size:24px 24px;border-left:2px solid var(--teal-2);box-shadow:-30px 0 40px -24px rgba(12,60,70,.45);padding:20px 28px;display:grid;grid-template-columns:272px 1fr;grid-template-rows:auto 1fr;gap:14px 30px}
+.xray.pending{transform:translateX(60px)}
+.xray-h{grid-column:1/-1;display:flex;align-items:center;gap:14px;color:var(--teal)}
+.xray-h svg{width:44px;height:28px}
+.xray-h b{font:800 26px/1 var(--display);color:var(--ink)}
+.xray-h span{font-size:18px;color:var(--muted)}
+.xcol{display:flex;flex-direction:column;gap:8px;min-width:0}
+.xfig{position:relative;width:272px;height:204px;border-radius:8px;overflow:hidden;background:#2F3B2A}
+.xfig img{display:block;width:100%;height:100%}
+.xbox{position:absolute;border:2.5px solid #FFD27A;box-shadow:0 0 0 2px rgba(0,0,0,.35);border-radius:2px}
+.xcap{margin:0;font-size:14.5px;line-height:1.35;color:var(--muted)}
+.xcap b{color:var(--ink);font-family:var(--mono);font-weight:600;font-size:13.5px}
+#zoom{display:block;width:272px;height:272px;border-radius:8px;image-rendering:pixelated;margin-top:4px}
+.xsteps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px;counter-reset:x}
+.xsteps li{display:grid;grid-template-columns:38px 1fr;gap:14px;counter-increment:x;background:rgba(255,255,255,.82);border:1.5px solid #CBE1E4;border-radius:12px;padding:12px 16px}
+.xsteps li::before{content:counter(x);display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--teal);color:#fff;font:600 16px var(--mono)}
+.xsteps h5{margin:3px 0 4px;font:700 19px/1.2 var(--display);color:var(--ink)}
+.xsteps p{margin:0;font-size:16.5px;line-height:1.38;color:var(--text)}
+.xsteps li.limit{border-color:var(--amber-2);background:#FFF9EF}
+.xsteps li.limit::before{background:var(--amber-2)}
+
+/* level-up celebration */
+.levelup{position:absolute;inset:0;z-index:5;display:grid;place-items:center;background:rgba(20,33,42,.58)}
+.lu-card{position:relative;width:860px;box-sizing:border-box;background:var(--white);border-radius:24px;padding:30px 40px 30px 24px;display:grid;grid-template-columns:220px 1fr;gap:26px;align-items:center;box-shadow:0 40px 80px -30px rgba(0,0,0,.6)}
+.lu-bot{width:220px;height:330px;animation:hop 1.3s ease-in-out infinite}
+@keyframes hop{0%,100%{transform:translateY(0)}35%{transform:translateY(-16px)}55%{transform:translateY(0)}}
+.spark{position:absolute;width:22px;height:22px;color:var(--amber-2);animation:twinkle 1.6s ease-in-out infinite}
+@keyframes twinkle{0%,100%{opacity:.25;transform:scale(.7)}50%{opacity:1;transform:scale(1.1)}}
+.lu-eye{margin:0;font:600 14px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--amber)}
+.lu-text h3{margin:6px 0 0;font:800 44px/1.02 var(--display);letter-spacing:-.02em;color:var(--ink)}
+.lu-stk{display:flex;align-items:center;gap:18px;margin-top:22px;padding:14px 18px;border-radius:14px;background:var(--paper);border:1.5px solid var(--paper-edge)}
+.lu-stk p{margin:0;font-size:20px;line-height:1.35}
+.lu-hw{margin-top:14px;padding:14px 18px;border-radius:14px;border:1.5px dashed var(--pencil-green);font-size:19px;line-height:1.4}
+.lu-hw b{display:block;font:600 12.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--pencil-green);margin-bottom:4px}
+
+/* stop 3: nature story (vignette) */
+.lay3{grid-template-columns:500px 1fr}
+.lib{border-left:1.5px solid var(--line-soft);background:#F7F9F9;padding:16px 22px 18px;display:flex;flex-direction:column;gap:10px;min-width:0;position:relative}
+.lib-h{display:flex;justify-content:space-between;align-items:baseline;font:600 12.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.lib-h b{color:var(--lib)}
+.vig{display:flex;flex-direction:column;gap:7px}
+.vig-h h3{margin:0;font:800 26px/1.1 var(--display);color:var(--ink)}
+.vig-h span{display:block;margin-top:3px;font:600 11.5px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.pnl{border:1.5px solid var(--line-soft);border-radius:10px;background:var(--white);overflow:hidden}
+.pt{display:flex;justify-content:space-between;align-items:center;padding:7px 14px;font:600 12.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.pt::after{content:"—";font-weight:500;letter-spacing:.06em}
+.pnl.open{border-color:#BFD9DC}
+.pnl.open .pt{background:var(--teal-ghost);color:var(--teal)}
+.pnl.open .pt::after{content:"reading"}
+.pnl.done .pt{color:var(--teal-2)}
+.pnl.done .pt::after{content:"read ✓"}
+.pnl .pc{display:none;padding:4px 16px 12px;font-size:17px;line-height:1.45}
+.pnl.open .pc{display:block}
+.pc p{margin:0}.pc p+p{margin-top:6px}
+.term{border-bottom:2px dotted var(--teal-2);color:var(--teal)}
+.gloss{margin:8px 0 0;padding:7px 12px;border-left:3px solid var(--teal-2);background:var(--teal-ghost);font-size:15.5px}
+.chain{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:4px;counter-reset:c}
+.chain li{position:relative;display:grid;grid-template-columns:26px 1fr auto;gap:10px;align-items:center;font-size:15.5px;line-height:1.3;padding:5px 10px;border-left:3px solid var(--line);background:#FAFBFB;counter-increment:c}
+.chain li::before{content:counter(c);font:600 13px var(--mono);color:var(--muted)}
+.chain .mk{font:600 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+.chain.graded li{border-left-color:var(--held);background:var(--held-wash)}
+.chain.graded li .mk{color:var(--held)}
+.chain.graded li .mk::after{content:"you said this"}
+.chain.graded li.gap:not(.lit){border-left-color:var(--gap);background:var(--gap-wash);color:var(--gap)}
+.chain.graded li.gap:not(.lit) .mk{color:var(--gap)}
+.chain.graded li.gap:not(.lit) .mk::after{content:"not yet"}
+.evid{display:inline-block;font:600 11.5px var(--mono);letter-spacing:.08em;padding:3px 8px;border-radius:6px;background:var(--held-wash);color:var(--held);margin-right:6px}
+.stops{margin:6px 0 0;padding-left:20px}
+.pnl.held{border:1.5px dashed var(--held)}
+.pnl.held .pt{background:var(--held-wash);color:var(--held)}
+.pnl.held .pt::after{content:"◇ held until Level 3"}
+.pnl.held .pc{display:block;color:var(--held);font-size:15.5px}
+.pnl.held.tapped{box-shadow:0 0 0 3px rgba(44,122,87,.25)}
+.mine{background:var(--white);border:1.5px solid var(--line);border-radius:12px;padding:12px 16px}
+.mine .lab{display:block;font:600 11.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.mine p{margin:0;font:400 23px/1.4 var(--hand);color:var(--graphite)}
+.mine p+p{margin-top:4px;color:var(--pencil-blue)}
+
+.hw-q{margin:14px 0 0;font:700 25px/1.3 var(--hand);color:var(--pencil-blue)}
+.hw-how{margin:8px 0 6px;font:400 23px/1.3 var(--hand);color:var(--graphite)}
+.hw-how b{color:var(--pencil-green)}
+.htable{width:100%;border-collapse:collapse;font:400 23px/1.3 var(--hand);color:var(--graphite)}
+.htable th{text-align:left;font:600 12px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:4px 10px;border-bottom:2px solid rgba(59,66,71,.45)}
+.htable td{padding:5px 10px;border-bottom:1.5px solid rgba(59,66,71,.25)}
+.htable td:first-child{width:38%;border-right:1.5px solid rgba(59,66,71,.3)}
+.htable tr.odd td{color:var(--pencil-blue);font-weight:700}
+.hw-guess{margin:14px 0 0;font:700 25px/1.35 var(--hand);color:var(--graphite)}
+.shelf-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;border:1.5px dashed var(--line);border-radius:14px;color:var(--muted);font-size:18px;text-align:center;padding:20px}
+.shelf-empty svg{width:120px;height:180px;opacity:.9}
+.stops li.found{font-weight:700;color:var(--ink)}
+.foundtag{display:inline-block;margin-left:8px;font:700 18px/1 var(--hand);color:#fff;background:var(--pencil-blue);padding:3px 9px 4px;border-radius:6px;transform:rotate(-2deg)}
+
+/* stop 4: idea board */
+.lay4{grid-template-columns:1fr 560px}
+.board{border-left:1.5px solid var(--line-soft);background:#FAFBF9;padding:18px 22px;display:flex;flex-direction:column;gap:9px;min-width:0}
+.board-h{display:flex;flex-direction:column;gap:3px;margin-bottom:4px}
+.board-h b{font:700 21px var(--display);color:var(--ink)}
+.board-h span{font-size:15.5px;color:var(--muted)}
+.idea{display:grid;grid-template-columns:146px 1fr;gap:12px;align-items:start;background:var(--white);border:1.5px solid var(--line-soft);border-radius:10px;padding:9px 12px;font-size:16.5px;line-height:1.33}
+.tag{display:inline-flex;align-items:center;gap:6px;justify-self:start;font:600 11.5px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;padding:5px 8px;border-radius:6px;white-space:nowrap}
+.tag svg{width:14px;height:14px;flex:none}
+.tag.tg-journal{background:var(--leaf-wash);color:var(--pencil-green)}
+.tag.tg-chat{background:var(--teal-wash);color:var(--teal)}
+.tag.tg-robot{background:var(--amber-wash);color:var(--amber)}
+.tag.tg-lib{background:var(--lib-wash);color:var(--lib)}
+.idea.from-robot{border-style:dashed;border-color:var(--amber-2)}
+.idea.from-lib{border-style:dashed;border-color:var(--lib)}
+.tally{margin-top:auto;padding-top:10px;border-top:1.5px solid var(--line-soft)}
+.tally-h{display:flex;justify-content:space-between;font:600 12.5px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+.tally-bar{display:flex;height:14px;border-radius:7px;overflow:hidden;gap:2px;background:var(--neutral-1)}
+.tally-bar span{transition:flex-grow .5s}
+.tb-maya{background:var(--teal-2)}.tb-robot{background:var(--amber-2)}.tb-lib{background:var(--lib)}
+
+/* stop 5: teacher view */
+.dist{flex:none;display:flex;align-items:center;gap:22px;padding:12px 24px 14px;border-bottom:1.5px solid var(--line-soft)}
+.dist-l{flex:none;width:110px;font:600 11.5px/1.25 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.dist-cols{flex:1;display:grid;grid-template-columns:repeat(5,1fr);gap:16px}
+.dcol{display:flex;flex-direction:column;gap:4px;min-width:0}
+.dcol .nm{font-size:14px;color:var(--muted);white-space:nowrap}
+.dcol .ct{font:600 22px/1 var(--mono);color:var(--ink);font-variant-numeric:tabular-nums}
+.dcol .bar{height:6px;border-radius:3px;background:var(--neutral-1);overflow:hidden}
+.dcol .bar i{display:block;height:100%;background:var(--teal-2);border-radius:3px}
+.dcol.behind .bar i{background:var(--amber-2)}
+.lay5{grid-template-columns:1fr 500px}
+.tiles{padding:18px 20px;display:grid;grid-template-columns:repeat(6,1fr);grid-template-rows:repeat(4,1fr);gap:10px;min-width:0;position:relative}
+.tile{position:relative;border:1.5px solid var(--line-soft);border-radius:11px;padding:10px 12px 11px;background:var(--white);display:flex;flex-direction:column;gap:3px;min-width:0;transition:box-shadow .4s,border-color .4s}
+.tile b{font-size:17px;color:var(--ink)}
+.tile .ch{font-size:13.5px;color:var(--muted);line-height:1.25}
+.dots{display:flex;gap:3px;margin-top:auto}
+.dots i{flex:1;height:5px;border-radius:3px;background:var(--neutral-2)}
+.dots i.d{background:var(--teal-2)}.dots i.n{background:var(--ink)}
+.badge{position:absolute;top:-11px;right:8px;background:var(--amber);color:#fff;font:600 11px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;padding:5px 8px;border-radius:99px;opacity:0;transform:translateY(4px);transition:all .4s}
+.tile.lit{border-color:var(--amber-2);box-shadow:0 0 0 4px rgba(208,142,44,.28);background:#FFFBF3}
+.tile.lit .badge{opacity:1;transform:none}
+.alerts{border-left:1.5px solid var(--line-soft);background:#FAFBFB;padding:18px 22px;display:flex;flex-direction:column;gap:12px;min-width:0;overflow:hidden}
+.alerts-h{font:700 21px var(--display);color:var(--ink)}
+.calm{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;flex:1;text-align:center;color:var(--muted);font-size:18px;border:1.5px dashed var(--line);border-radius:12px;padding:20px}
+.calm svg{width:34px;height:34px;color:var(--teal-2)}
+.alert{border:2px solid var(--amber-2);border-radius:12px;background:var(--white);overflow:hidden}
+.alert-h{display:flex;align-items:center;gap:10px;padding:11px 16px;background:var(--amber-wash)}
+.alert-h .dot{width:12px;height:12px;border-radius:50%;background:var(--amber-2);flex:none}
+.alert-h b{font:700 19px var(--display);color:var(--ink)}
+.alert-h time{margin-left:auto;font:500 12.5px var(--mono);color:var(--muted)}
+.alert-b{padding:12px 16px 14px;display:flex;flex-direction:column;gap:10px;font-size:16.5px;line-height:1.38}
+.alert-b p{margin:0}
+.kv span{display:block;font:600 11.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+.ways{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px}
+.ways li{display:grid;grid-template-columns:24px 1fr;gap:8px;background:var(--teal-ghost);border-radius:8px;padding:7px 10px}
+.ways li::before{content:"→";color:var(--teal-2);font-weight:700}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+.btn{font:700 15px var(--body);padding:8px 13px;border-radius:8px;border:1.5px solid var(--line);background:var(--white);color:var(--text)}
+.btn.primary{background:var(--teal);border-color:var(--teal);color:#fff}
+.peek{position:absolute;left:356px;top:212px;width:470px;box-sizing:border-box;background:var(--ink);color:#E4EEF1;border-radius:14px;padding:16px 18px 18px;box-shadow:0 24px 50px -20px rgba(10,30,40,.6);z-index:3}
+.peek::after{content:"";position:absolute;right:-9px;top:84px;width:18px;height:18px;background:var(--ink);transform:rotate(45deg)}
+.peek-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+.peek-h b{font:700 18px var(--display);color:#fff}
+.peek-h span{font:500 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:#8FA9B1}
+.peek ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px}
+.peek li{display:flex;justify-content:space-between;gap:12px;align-items:baseline;background:#223540;border-radius:9px;padding:8px 12px;font-size:17px}
+.peek time{font:500 12.5px var(--mono);color:#8FA9B1;flex:none}
+
+/* ---------- break / wrap / survey ---------- */
+.center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:18px;padding:0 120px}
+.count{font:600 220px/1 var(--mono);letter-spacing:-.04em;color:var(--ink);font-variant-numeric:tabular-nums}
+.count.done{color:var(--amber)}
+.center .lead{margin:0;font-size:30px;color:var(--muted)}
+.center .next{margin:24px 0 0;font-size:22px;color:var(--muted)}
+.center .next b{color:var(--ink)}
+.center .q{margin:10px 0 0;font:800 72px/1.04 var(--display);letter-spacing:-.025em;color:var(--ink);max-width:1200px}
+.restart{font:600 14px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--teal);background:transparent;border:1.5px solid var(--line);border-radius:99px;padding:8px 16px;cursor:pointer}
+.restart:focus-visible{outline:3px solid var(--teal-2);outline-offset:2px}
+.steps3{display:flex;gap:18px;margin-top:26px}
+.steps3 div{background:var(--white);border:1.5px solid var(--line-soft);border-radius:14px;padding:16px 22px;font-size:20px;color:var(--text);max-width:330px;text-align:left}
+.steps3 span{display:block;font:600 12.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--teal-2);margin-bottom:6px}
+
+/* ---------- presenter controls + notes (outside the stage) ---------- */
+#controls{position:fixed;left:16px;right:16px;margin-inline:auto;width:max-content;bottom:calc(12px + env(safe-area-inset-bottom,0px));display:flex;align-items:center;gap:4px;padding:6px;background:rgba(14,20,23,.94);border:1px solid var(--chrome-line);border-radius:14px;z-index:30;transition:opacity .3s;max-width:calc(100vw - 32px);box-sizing:border-box;flex-wrap:wrap;justify-content:center}
+#controls.idle{opacity:0;pointer-events:none}
+.cb{font:600 14px var(--body);color:var(--chrome-text);background:transparent;border:1px solid transparent;border-radius:9px;padding:8px 12px;cursor:pointer;white-space:nowrap}
+.cb:hover{background:#1E2A30}
+.cb:focus-visible,#jump:focus-visible{outline:2px solid var(--teal-2);outline-offset:1px}
+.cb.on{background:#22343C;color:#fff}
+#pos{font:500 13px var(--mono);color:var(--chrome-dim);padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:340px;min-width:0}
+#jump{font:500 13px var(--body);background:var(--chrome);color:var(--chrome-text);border:1px solid var(--chrome-line);border-radius:8px;padding:7px 8px;max-width:200px}
+.sep{width:1px;height:22px;background:var(--chrome-line);margin:0 4px}
+#notes{position:fixed;top:0;right:0;bottom:0;width:min(440px,100vw);box-sizing:border-box;background:#0A1013;color:#D3DDE1;border-left:1px solid var(--chrome-line);padding:calc(22px + env(safe-area-inset-top,0px)) 24px 100px;overflow-y:auto;z-index:20;font-size:15px;line-height:1.5}
+#notes h2{margin:0;font:700 20px var(--display);color:#fff}
+#notes .meta{margin:6px 0 16px;font:500 12.5px var(--mono);letter-spacing:.06em;color:var(--chrome-dim);text-transform:uppercase}
+#notes h3{margin:18px 0 8px;font:600 12px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:#7FD0DA}
+#notes ol,#notes ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+#notes li.now{color:#fff;font-weight:700}
+#notes li.now::marker{color:#E8B66A}
+#notes .tip{margin:14px 0 0;padding:10px 12px;border-left:3px solid var(--amber-2);background:#141D21;color:#E6D2B0}
+#notes .team{margin-top:22px;padding-top:14px;border-top:1px solid var(--chrome-line);color:var(--chrome-dim);font-size:13.5px}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{transition:none!important;animation:none!important}
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <filter id="pencil" filterUnits="userSpaceOnUse" x="-40" y="-40" width="800" height="700">
+      <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="4" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="3.2" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <pattern id="hatch" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(38)">
+      <line x1="0" y1="0" x2="0" y2="9" stroke="#3F7A32" stroke-width="2.6" stroke-opacity=".30"/>
+    </pattern>
+    <!-- the robot: shared body, two poses -->
+    <g id="rb-core">
+      <ellipse cx="100" cy="284" rx="72" ry="8" fill="#000" opacity=".12"/>
+      <rect x="76" y="200" width="16" height="36" rx="5" fill="#0A4852"/>
+      <rect x="108" y="200" width="16" height="36" rx="5" fill="#0A4852"/>
+      <!-- left hiking boot -->
+      <path d="M97 226 L97 266 L58 266 Q45 266 47 255 Q49 244 64 242 L67 226 Z" fill="#8A5A33"/>
+      <path d="M47 255 Q49 246 61 245 L63 266 L58 266 Q45 266 47 255 Z" fill="#6B4426"/>
+      <rect x="65" y="221" width="34" height="11" rx="5" fill="#6B4426"/>
+      <path d="M72 236 L92 242 M92 236 L72 242 M72 246 L91 252 M91 246 L72 252" stroke="#F2B356" stroke-width="2.6" stroke-linecap="round"/>
+      <rect x="43" y="263" width="58" height="13" rx="4" fill="#33251A"/>
+      <path d="M46 276 l4.5 -5 l4.5 5 l4.5 -5 l4.5 5 l4.5 -5 l4.5 5 l4.5 -5 l4.5 5 l4.5 -5 l4.5 5 l4.5 -5" stroke="#1B140E" stroke-width="2.2" fill="none" stroke-linejoin="round"/>
+      <!-- right hiking boot -->
+      <path d="M103 226 L103 266 L142 266 Q155 266 153 255 Q151 244 136 242 L133 226 Z" fill="#8A5A33"/>
+      <path d="M153 255 Q151 246 139 245 L137 266 L142 266 Q155 266 153 255 Z" fill="#6B4426"/>
+      <rect x="101" y="221" width="34" height="11" rx="5" fill="#6B4426"/>
+      <path d="M108 236 L128 242 M128 236 L108 242 M109 246 L128 252 M128 246 L109 252" stroke="#F2B356" stroke-width="2.6" stroke-linecap="round"/>
+      <rect x="99" y="263" width="58" height="13" rx="4" fill="#33251A"/>
+      <path d="M100 276 l4.5 -5 l4.5 5 l4.5 -5 l4.5 5 l4.5 -5 l4.5 5 l4.5 -5 l4.5 5 l4.5 -5 l4.5 5 l4.5 -5" stroke="#1B140E" stroke-width="2.2" fill="none" stroke-linejoin="round"/>
+      <!-- torso with a see-through chest window -->
+      <rect x="56" y="116" width="88" height="92" rx="20" fill="#12808F"/>
+      <rect x="71" y="130" width="58" height="46" rx="10" fill="#D7EEF1" stroke="#0C5A66" stroke-width="2.5"/>
+      <circle cx="88" cy="153" r="9" fill="none" stroke="#0C5A66" stroke-width="3.5" stroke-dasharray="3.2 2.4"/>
+      <circle cx="88" cy="153" r="3.2" fill="#0C5A66"/>
+      <rect x="104" y="156" width="5.5" height="12" rx="1" fill="#12808F"/>
+      <rect x="111.5" y="146" width="5.5" height="22" rx="1" fill="#D08E2C"/>
+      <rect x="119" y="151" width="5.5" height="17" rx="1" fill="#12808F"/>
+      <rect x="66" y="188" width="68" height="10" rx="5" fill="#0C5A66" opacity=".55"/>
+      <!-- neck, head, antenna -->
+      <rect x="90" y="106" width="20" height="14" rx="4" fill="#0A4852"/>
+      <line x1="100" y1="17" x2="100" y2="38" stroke="#0A4852" stroke-width="4" stroke-linecap="round"/>
+      <circle cx="100" cy="13" r="8" fill="#F2B356"/>
+      <rect x="41" y="60" width="13" height="28" rx="5" fill="#0A4852"/>
+      <rect x="146" y="60" width="13" height="28" rx="5" fill="#0A4852"/>
+      <rect x="50" y="34" width="100" height="76" rx="24" fill="#0C5A66"/>
+      <rect x="62" y="46" width="76" height="52" rx="15" fill="#E1EFF1"/>
+      <circle cx="86" cy="70" r="7.5" fill="#0C5A66"/>
+      <circle cx="114" cy="70" r="7.5" fill="#0C5A66"/>
+      <circle cx="88.6" cy="67.4" r="2.3" fill="#fff"/>
+      <circle cx="116.6" cy="67.4" r="2.3" fill="#fff"/>
+    </g>
+  </defs>
+  <symbol id="robot-stand" viewBox="0 0 200 300">
+    <use href="#rb-core"/>
+    <path d="M89 86 Q100 94 111 86" stroke="#0C5A66" stroke-width="3.6" fill="none" stroke-linecap="round"/>
+    <path d="M60 132 Q42 156 40 184" stroke="#0A4852" stroke-width="12" stroke-linecap="round" fill="none"/>
+    <circle cx="40" cy="189" r="9.5" fill="#0C5A66"/>
+    <path d="M140 132 Q158 146 162 164" stroke="#0A4852" stroke-width="12" stroke-linecap="round" fill="none"/>
+    <line x1="166" y1="163" x2="175" y2="146" stroke="#3B4247" stroke-width="5.5" stroke-linecap="round"/>
+    <circle cx="163" cy="168" r="9.5" fill="#0C5A66"/>
+    <circle cx="182" cy="133" r="14" fill="rgba(191,227,232,.6)" stroke="#3B4247" stroke-width="4.5"/>
+  </symbol>
+  <symbol id="robot-cheer" viewBox="0 0 200 300">
+    <use href="#rb-core"/>
+    <path d="M87 84 Q100 101 113 84 Z" fill="#0C5A66"/>
+    <path d="M60 130 Q40 110 34 84" stroke="#0A4852" stroke-width="12" stroke-linecap="round" fill="none"/>
+    <circle cx="33" cy="79" r="9.5" fill="#0C5A66"/>
+    <path d="M140 130 Q160 110 166 84" stroke="#0A4852" stroke-width="12" stroke-linecap="round" fill="none"/>
+    <circle cx="167" cy="79" r="9.5" fill="#0C5A66"/>
+  </symbol>
+  <symbol id="robot" viewBox="0 0 44 44">
+    <rect x="1" y="1" width="42" height="42" rx="12" fill="#0C5A66"/>
+    <line x1="22" y1="5.5" x2="22" y2="11" stroke="#9FD6DD" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="22" cy="5.5" r="2.4" fill="#F2B356"/>
+    <rect x="8.5" y="12" width="27" height="22" rx="6.5" fill="#E1EFF1"/>
+    <circle cx="16.5" cy="21.5" r="3.3" fill="#0C5A66"/>
+    <circle cx="27.5" cy="21.5" r="3.3" fill="#0C5A66"/>
+    <path d="M18 28 Q22 31 26 28" stroke="#0C5A66" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 1 L14.2 9.8 L23 12 L14.2 14.2 L12 23 L9.8 14.2 L1 12 L9.8 9.8 Z" fill="currentColor"/></symbol>
+  <symbol id="i-check" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9.2" fill="currentColor" opacity=".15"/><path d="M5.6 10.4l3 3 5.8-6.8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-cross" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9.2" fill="currentColor" opacity=".15"/><path d="M6.8 6.8l6.4 6.4M13.2 6.8l-6.4 6.4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+  <symbol id="i-glasses" viewBox="0 0 40 26"><circle cx="10" cy="15" r="7.5" fill="none" stroke="currentColor" stroke-width="2.6"/><circle cx="30" cy="15" r="7.5" fill="none" stroke="currentColor" stroke-width="2.6"/><path d="M17.5 14q2.5-3 5 0M2.6 14L1.5 6M37.4 14l1.1-8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path d="M6.5 12.5l3-3M26.5 12.5l3-3" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity=".6"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M3.5 5h17v11.5H9.5L4.5 20.5V16.5h-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+  <symbol id="i-pencil" viewBox="0 0 20 20"><path d="M3.5 16.5l1.2-4.4 8.6-8.6 3.2 3.2-8.6 8.6z M11.6 5.2l3.2 3.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+  <symbol id="i-book" viewBox="0 0 20 20"><path d="M3 4.5h5.5a2 2 0 0 1 2 2V16a1.6 1.6 0 0 0-1.6-1.6H3z M17 4.5h-5.5a1 1 0 0 0-1 1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M17 4.5V14.4h-5.9a1.6 1.6 0 0 0-1.6 1.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+  <symbol id="i-report" viewBox="0 0 24 24"><path d="M6 2.8h8.5L19 7.3V21.2H6z M14.5 2.8V7.3H19" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 12h7M9 15.5h7M9 19h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-shape" viewBox="0 0 24 24"><path d="M4 18.5l1.4-5.1 9.9-9.9 3.7 3.7-9.9 9.9z M13.6 5.2l3.7 3.7" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M3 21.5h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-calm" viewBox="0 0 34 34"><circle cx="17" cy="17" r="15" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M10.5 17.5l4.5 4.5 8.5-9.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+
+  <!-- Maya's field sketch: the same drawing appears on the welcome slide, in her journal, and as her upload -->
+  <symbol id="sketch-art" viewBox="0 0 700 600">
+    <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <g stroke="#3B4247" stroke-width="2" filter="url(#pencil)">
+        <path d="M170 42 L548 42"/><path d="M170 32 L170 52"/><path d="M548 32 L548 52"/><path d="M359 36 L359 48"/>
+      </g>
+      <g transform="translate(110 40) scale(.82)">
+        <path d="M300 120 C240 60 110 50 80 150 C55 245 170 390 310 500 C450 390 560 250 530 150 C505 55 370 60 300 120 Z" fill="url(#hatch)" stroke="none"/>
+        <g stroke="#3B4247" filter="url(#pencil)">
+          <path d="M300 120 C240 60 110 50 80 150 C55 245 170 390 310 500 C450 390 560 250 530 150 C505 55 370 60 300 120 Z" stroke-width="3.4"/>
+          <path d="M300 120 C298 90 293 55 286 22" stroke-width="3.2"/>
+          <path d="M300 122 C305 250 308 380 310 495" stroke-width="2.3"/>
+          <g stroke-width="1.7" opacity=".8">
+            <path d="M302 170 Q230 150 150 128"/><path d="M302 170 Q380 150 462 128"/>
+            <path d="M304 232 Q210 225 110 225"/><path d="M304 232 Q400 222 500 222"/>
+            <path d="M306 300 Q240 320 175 342"/><path d="M306 300 Q380 318 452 340"/>
+            <path d="M308 372 Q275 398 245 428"/><path d="M308 372 Q345 398 378 425"/>
+          </g>
+        </g>
+        <g id="sk-drops" stroke="#2F6DA6" stroke-width="2.7" filter="url(#pencil)"></g>
+      </g>
+      <g stroke="#2F6DA6" stroke-width="2.6" filter="url(#pencil)">
+        <circle cx="371" cy="503" r="9" fill="rgba(47,109,166,.12)"/>
+        <path d="M361 462 L364 480 M380 460 L381 476"/>
+      </g>
+      <g stroke="#3B4247" stroke-width="2" filter="url(#pencil)">
+        <path d="M170 168 Q212 172 250 188"/><path d="M239 180 L251 189 L238 194"/>
+        <path d="M16 312 Q100 318 206 309"/>
+        <path d="M216 296 Q255 272 290 258"/><path d="M278 256 L291 257 L284 268"/>
+        <path d="M586 146 Q510 160 446 194"/><path d="M458 197 L445 195 L452 184"/>
+        <path d="M584 280 Q545 272 505 282"/><path d="M516 276 L504 282 L515 290"/>
+        <path d="M150 418 Q230 400 314 386"/><path d="M302 382 L315 386 L305 394"/>
+        <path d="M402 546 Q382 534 378 514"/><path d="M371 523 L378 512 L386 521"/>
+      </g>
+    </g>
+    <g fill="#3B4247" font-family="Kalam, 'Segoe Print', 'Comic Sans MS', cursive">
+      <text x="359" y="24" text-anchor="middle" font-size="23">about 2 of my hands wide</text>
+      <text x="26" y="170" font-size="28" font-weight="700">water balls!</text>
+      <text x="16" y="302" font-size="28" font-weight="700">DRY under here!</text>
+      <text x="592" y="152" font-size="27">shiny</text>
+      <text x="590" y="287" font-size="28">waxy?</text>
+      <text x="566" y="315" font-size="21">like a crayon</text>
+      <text x="28" y="428" font-size="26">super clean!</text>
+      <text x="396" y="566" font-size="24">rolls off when I tip it!</text>
+    </g>
+  </symbol>
+</svg>
+
+<div id="viewport">
+<div id="stage">
+
+  <!-- ============ WELCOME ============ -->
+  <section class="slide" data-id="welcome" data-steps="1" data-label="Welcome">
+    <div class="welcome">
+      <div class="w-text">
+        <p class="eyebrow">Parent &amp; teacher focus group</p>
+        <h1>A Week with <em>Maya</em></h1>
+        <p class="w-lede">Early ideas for a classroom AI that helps middle schoolers do their own thinking.</p>
+      </div>
+      <svg class="w-art" viewBox="0 0 700 600" aria-hidden="true"><use href="#sketch-art"/></svg>
+      <svg class="w-bot" viewBox="0 0 200 300" role="img" aria-label="The robot, wearing hiking boots and holding a magnifying glass"><use href="#robot-stand"/></svg>
+      <ul class="w-cards">
+        <li><h3>These are early ideas</h3><p>We learn the most from what doesn't work. Please be blunt.</p></li>
+        <li><h3>Picture a real middle schooler</h3><p>Your own child, or a student you've taught. Keep them in mind all session.</p></li>
+        <li><h3>We're recording, with your OK</h3><p>So we capture what you say accurately.</p></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ OUR GOALS ============ -->
+  <section class="slide" data-id="goals" data-steps="1" data-label="Our goals">
+    <div class="intro-wrap">
+      <p class="eyebrow">Our goals</p>
+      <h2 class="big">Building a better way to use AI in middle school</h2>
+      <p class="lede">Some AI use in K–12 is inevitable. We're building a model for how middle schools can use it well. That model has three goals.</p>
+      <ol class="goals">
+        <li>
+          <div class="goal-art" aria-hidden="true">
+            <svg viewBox="0 0 110 100"><path d="M55 14c-17 0-29 12-29 28 0 11 6 18 12 24 3 3 4 6 4 10h26c0-4 1-7 4-10 6-6 12-13 12-24 0-16-12-28-29-28z" fill="#F8ECD6" stroke="#D08E2C" stroke-width="4" stroke-linejoin="round"/><rect x="42" y="80" width="26" height="7" rx="3" fill="#3B4247"/><rect x="45" y="89" width="20" height="6" rx="3" fill="#3B4247"/><path d="M47 54c3-10 13-10 16 0M55 42v-9" stroke="#D08E2C" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M12 30l-9-4M98 30l9-4M20 10l-6-7M90 10l6-7" stroke="#D08E2C" stroke-width="4" stroke-linecap="round"/></svg>
+          </div>
+          <span class="gn">Goal 1</span>
+          <h3>Builds thinking, doesn't replace it</h3>
+          <p>The AI doesn't do students' thinking for them. It helps them think further than they would on their own.</p>
+        </li>
+        <li>
+          <div class="goal-art" aria-hidden="true">
+            <svg viewBox="0 0 200 100"><rect x="6" y="18" width="64" height="64" rx="10" fill="#14212A"/><text x="38" y="62" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-weight="800" font-size="34" fill="#FFFFFF">?</text><path d="M82 50h30M104 42l9 8-9 8" stroke="#586870" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/><rect x="126" y="18" width="64" height="64" rx="10" fill="#F2F8F8" stroke="#12808F" stroke-width="4"/><circle cx="146" cy="44" r="10" fill="none" stroke="#0C5A66" stroke-width="3.5" stroke-dasharray="4 3"/><circle cx="146" cy="44" r="3.5" fill="#0C5A66"/><rect x="164" y="48" width="6" height="22" rx="1" fill="#12808F"/><rect x="173" y="38" width="6" height="32" rx="1" fill="#D08E2C"/><path d="M137 66h20" stroke="#0C5A66" stroke-width="3" stroke-linecap="round"/></svg>
+          </div>
+          <span class="gn">Goal 2</span>
+          <h3>Shows how AI works</h3>
+          <p>A glass box, not a black box. Students learn how AI works while they use it.</p>
+        </li>
+        <li>
+          <div class="goal-art" aria-hidden="true">
+            <svg viewBox="0 0 200 100"><path d="M60 92C20 80 8 44 22 14c32 2 60 22 58 58-2 10-8 17-20 20z" fill="#E7F0DF" stroke="#3F7A32" stroke-width="4" stroke-linejoin="round"/><path d="M60 92C52 66 40 42 22 14" stroke="#3F7A32" stroke-width="3" fill="none" stroke-linecap="round"/><rect x="96" y="22" width="46" height="62" rx="5" fill="#FCFBF6" stroke="#3B4247" stroke-width="3.5"/><path d="M104 38h30M104 50h30M104 62h20" stroke="#2F6DA6" stroke-width="3" stroke-linecap="round"/><rect x="156" y="58" width="34" height="22" rx="3" fill="#DDE6E8" stroke="#586870" stroke-width="3"/><path d="M150 86h46" stroke="#586870" stroke-width="3.5" stroke-linecap="round"/></svg>
+          </div>
+          <span class="gn">Goal 3</span>
+          <h3>Balances screens with real experiences</h3>
+          <p>Going outside, hands-on projects, journals and working with classmates take up most of the time. The AI is one small part.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ============ WHY YOUR FEEDBACK MATTERS ============ -->
+  <section class="slide" data-id="why" data-steps="1" data-label="Why your feedback matters">
+    <div class="intro-wrap">
+      <p class="eyebrow">Why we asked you here</p>
+      <h2 class="big">Your feedback shapes what we build</h2>
+      <div class="why">
+        <div>
+          <span class="why-ic" aria-hidden="true"><svg><use href="#i-shape"/></svg></span>
+          <h3>It shapes our design</h3>
+          <p>Everything you'll see today is an early idea. What you tell us changes what we build next.</p>
+        </div>
+        <div>
+          <span class="why-ic" aria-hidden="true"><svg><use href="#i-report"/></svg></span>
+          <h3>NSF wants to hear from you</h3>
+          <p>The National Science Foundation funds this project and wants to see what parents and teachers think. We'll include what we learn in our reports, with names removed.</p>
+        </div>
+      </div>
+      <p class="why-foot">Honest and critical is more useful to us than polite.</p>
+    </div>
+  </section>
+
+  <!-- ============ HOW EACH STOP WORKS ============ -->
+  <section class="slide" data-id="how" data-steps="1" data-label="How each stop works">
+    <div class="how">
+      <p class="eyebrow">How today works</p>
+      <h2 class="big">Every stop follows the same three steps</h2>
+      <ol class="rhythm">
+        <li><span class="n">1</span><h3>Watch</h3><p class="t">2–3 minutes</p><p>We share a moment from Maya's week and talk you through it. You just watch.</p></li>
+        <li><span class="n">2</span><h3>Type</h3><p class="t">About 1 minute</p><p>Everyone types a first reaction in the Zoom chat, before anyone speaks.</p></li>
+        <li><span class="n">3</span><h3>Talk</h3><p class="t">The rest of the stop</p><p>We start from what you wrote in the chat and ask a few open questions.</p></li>
+      </ol>
+      <p class="how-foot">You don't need any background in technology or AI. If something confuses you, say so. That helps us too.</p>
+    </div>
+  </section>
+
+  <!-- ============ OPENING: TWO TUTORS ============ -->
+  <section class="slide" data-id="tutors" data-steps="6" data-react="5" data-label="Opening · Two tutors">
+    <header class="stophead">
+      <div class="stoptitle"><p class="eyebrow">Before we meet Maya</p><h2>Two tutors</h2></div>
+      <p class="headnote">Same student. Same question. Two different AI tutors.</p>
+    </header>
+    <div class="main tutors">
+      <div class="shared">
+        <span class="who">Student · sent to both tutors</span>
+        <p>i have to invent something inspired by nature for science. i found a leaf where the water rolls right off. what should i invent?</p>
+      </div>
+      <div class="lanes">
+        <div class="lane">
+          <div class="lane-h"><span class="tav">A</span>Tutor A</div>
+          <div class="lane-b">
+            <div class="tb tutor" data-s="1">
+              <p>Great find! That's called the <b>lotus effect</b>. The leaf is covered in tiny waxy bumps that trap air, so water beads up and rolls off, taking dirt with it.</p>
+              <p>Here are three inventions you could make:</p>
+              <ol><li>A self-cleaning window coating</li><li>A raincoat that never gets soaked</li><li>Paint that keeps buildings clean</li></ol>
+              <p>The raincoat is the easiest to explain. Want me to write up your design description too?</p>
+            </div>
+            <div class="tb student" data-s="2"><p>YES omg that would save me. thank you!!</p></div>
+            <div class="tb tutor" data-s="2"><p>Here you go! “My invention is a raincoat inspired by the lotus leaf. Its surface copies the leaf's tiny waxy bumps, so rain…”</p></div>
+          </div>
+        </div>
+        <div class="lane">
+          <div class="lane-h"><span class="tav">B</span>Tutor B</div>
+          <div class="lane-b">
+            <div class="tb tutor" data-s="3"><p>Cool find! What did you notice when you touched the leaf?</p></div>
+            <div class="tb student" data-s="3"><p>it felt waxy. and it was dry under the drops</p></div>
+            <div class="tb tutor" data-s="3"><p>So the leaf keeps water out. In what situations in your life do you wish water would roll off like that?</p></div>
+            <div class="tb student" data-s="4"><p>my backpack. my homework got soaked last week</p></div>
+            <div class="tb tutor" data-s="4"><p>That's a real problem to solve. What would your backpack need to emulate from the leaf, to have a similar waterproofing ability?</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <aside class="react-card" data-s="5">
+      <p class="rc-eye"><svg><use href="#i-chat"/></svg>Quick reaction · Zoom chat</p>
+      <p class="rc-lead">Type <b>A</b> or <b>B</b> in the chat.</p>
+      <h3 class="rc-q">Which would you want your child or students using?</h3>
+      <div class="react-timer" aria-hidden="true"><span></span></div>
+      <p class="rc-foot">About one minute</p>
+    </aside>
+  </section>
+
+  <!-- ============ MAYA'S WEEK ============ -->
+  <section class="slide" data-id="week" data-steps="1" data-label="Maya's week">
+    <div class="wk">
+      <p class="eyebrow">Meet Maya</p>
+      <h2 class="big">Maya's week, one level a day</h2>
+      <p class="lede">Maya is a 7th grader we made up. This week her science class invents something inspired by nature. Each day is a level. She finishes each one with a sticker for her journal and homework that sets up the next day.</p>
+      <ol class="days">
+        <li class="day"><span class="stopflag">Stops 1 &amp; 2</span><div class="day-top"><span class="stk sm s1">1</span><span class="d">Monday<br>Level 1</span></div><h3>Nature's abilities</h3><p>Goes outside and sketches a leaf. Meets the robot.</p><p class="hw"><b>Homework</b>Test one of her “I wonder” questions at home.</p><span class="chip hands"><svg><use href="#i-pencil"/></svg>Mostly hands-on</span></li>
+        <li class="day"><span class="stopflag">Stop 3</span><div class="day-top"><span class="stk sm s2">2</span><span class="d">Tuesday<br>Level 2</span></div><h3>How it works</h3><p>Shares her test results, then reads how her leaf works.</p><p class="hw"><b>Homework</b>List things that get wet that she wishes stayed dry.</p><span class="chip ai"><svg><use href="#i-chat"/></svg>Short time with AI</span></li>
+        <li class="day"><span class="stopflag">Stops 4 &amp; 5</span><div class="day-top"><span class="stk sm s3">3</span><span class="d">Wednesday<br>Level 3</span></div><h3>Connect to people</h3><p>Picks a problem from her list and starts an idea. Her teacher checks in.</p><p class="hw"><b>Homework</b>Jot down her first idea in the journal.</p><span class="chip ai"><svg><use href="#i-chat"/></svg>Short time with AI</span></li>
+        <li class="day off"><div class="day-top"><span class="stk sm s4">4</span><span class="d">Thursday<br>Level 4</span></div><h3>Design</h3><p>Draws her idea from different angles and builds a rough model.</p><span class="chip hands"><svg><use href="#i-pencil"/></svg>Hands-on</span></li>
+        <li class="day off"><div class="day-top"><span class="stk sm s5">5</span><span class="d">Friday<br>Level 5</span></div><h3>Present</h3><p>Presents her invention to the class. No AI.</p><span class="chip hands"><svg><use href="#i-pencil"/></svg>Hands-on</span></li>
+      </ol>
+      <p class="wk-foot"><b>Most of Maya's week happens away from the screen.</b> Today we pause at five moments.</p>
+    </div>
+  </section>
+
+  <!-- ============ STOP 1 ============ -->
+  <section class="slide" data-id="stop1" data-steps="6" data-react="5" data-label="Stop 1 · Maya goes outside">
+    <header class="stophead">
+      <div class="stoptitle"><p class="eyebrow">Stop 1 of 5 · Monday · Level 1</p><h2>Maya goes outside</h2><p class="sub">After the morning rain, Maya finds a big leaf by the fence. No screens yet.</p></div>
+      <ol class="week">
+        <li class="now">Mon · L1<b>Abilities</b></li><li class="later">Tue · L2<b>How it works</b></li><li class="later">Wed · L3<b>Connect</b></li><li class="later">Thu · L4<b>Design</b></li><li class="later">Fri · L5<b>Present</b></li>
+      </ol>
+    </header>
+    <div class="main">
+      <div class="journal">
+        <div class="jpage">
+          <div class="jhead"><span>Field journal</span><span class="hand">Maya R.</span></div>
+          <svg class="sketch" viewBox="0 0 700 600" role="img" aria-label="Maya's pencil sketch of a big leaf covered in water drops, with handwritten labels"><use href="#sketch-art"/></svg>
+        </div>
+        <div class="jpage withstrip">
+          <div class="jmeta">
+            <span>Date<span class="hand">Monday</span></span>
+            <span>Weather<span class="hand">just rained</span></span>
+            <span>Where<span class="hand">by the fence, near the garden</span></span>
+          </div>
+          <div class="prompt"><span class="plabel">I notice…</span><div class="lines"><p data-s="1">The rain made little balls on the leaf. They don't soak in. When I tip it, they roll off and take the dirt with them.</p></div></div>
+          <div class="prompt"><span class="plabel">It feels like…</span><div class="lines"><p data-s="2">Smooth and waxy, like a crayon. Under the drops it's totally DRY!</p></div></div>
+          <div class="prompt"><span class="plabel">It sounds like…</span><div class="lines"><p data-s="3">Almost nothing. Tiny taps when the drops fall off.</p></div></div>
+          <div class="prompt"><span class="plabel">I wonder…</span><div class="lines"><p data-s="4">Why doesn't the water soak in? Why is the leaf so clean when the ground is all muddy?</p></div></div>
+          <div class="strip" aria-label="Level sticker spots, all empty so far">
+            <span class="strip-h">Level<br>stickers</span>
+            <span class="slot"><em>L1</em></span><span class="slot"><em>L2</em></span><span class="slot"><em>L3</em></span><span class="slot"><em>L4</em></span><span class="slot"><em>L5</em></span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <aside class="react-card" data-s="5">
+      <p class="rc-eye"><svg><use href="#i-chat"/></svg>Quick reaction · Zoom chat</p>
+      <p class="rc-lead">Type your first thought before anyone speaks.</p>
+      <h3 class="rc-q">What do you think of students doing this part by hand, before the AI is involved?</h3>
+      <div class="react-timer" aria-hidden="true"><span></span></div>
+      <p class="rc-foot">About one minute</p>
+    </aside>
+  </section>
+
+  <!-- ============ STOP 2 ============ -->
+  <section class="slide" data-id="stop2" data-steps="7" data-react="6" data-label="Stop 2 · Maya meets the robot">
+    <header class="stophead">
+      <div class="stoptitle"><p class="eyebrow">Stop 2 of 5 · Monday · Level 1</p><h2>Maya meets the robot</h2><p class="sub">Back inside, Maya uploads her sketch and a photo of the leaf.</p></div>
+      <ol class="week">
+        <li class="now">Mon · L1<b>Abilities</b></li><li class="later">Tue · L2<b>How it works</b></li><li class="later">Wed · L3<b>Connect</b></li><li class="later">Thu · L4<b>Design</b></li><li class="later">Fri · L5<b>Present</b></li>
+      </ol>
+    </header>
+    <div class="main">
+      <div class="device">
+        <div class="dev-bar">
+          <div class="app-id"><b>Innovation inspired by nature</b><span>7th grade science</span></div>
+          <div class="progress">
+            <div class="lvwrap"><span class="lvlabel">Level</span><ol class="lvls" data-seq="0:1,5:2"><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li></ol></div>
+            <ol class="chapters" data-seq="0:1,5:4"><li>Go outside</li><li>Share a photo</li><li>Nature's abilities</li><li>Matching game</li></ol>
+          </div>
+          <div class="user"><i>M</i>Maya R.</div>
+        </div>
+        <div class="dev-body lay2">
+          <div class="chat">
+            <div class="turn bot intro" data-s="0">
+              <svg class="rb-full" viewBox="0 0 200 300" aria-hidden="true"><use href="#robot-stand"/></svg>
+              <div class="bw"><span class="who">Robot</span>
+                <div class="bubble"><p>Hi Maya! I'm a robot. I've got the hiking boots, but I can't go outside, feel a leaf, or smell the rain. You'll have to be my senses. What did you find?</p></div>
+              </div>
+            </div>
+            <div class="turn me" data-s="1">
+              <i class="av">M</i>
+              <div class="bw"><span class="who">Maya</span>
+                <div class="bubble">
+                  <div class="attach">
+                    <figure><img class="leaf-photo" alt="Maya's photo of the leaf with water drops"><figcaption>leaf photo</figcaption></figure>
+                    <figure><svg viewBox="0 0 700 600" aria-label="Maya's journal sketch"><use href="#sketch-art"/></svg><figcaption>journal sketch</figcaption></figure>
+                  </div>
+                  <p>this is my leaf from outside. the water makes little balls and rolls off</p>
+                </div>
+              </div>
+            </div>
+            <div class="turn bot" data-s="2">
+              <svg class="av" aria-hidden="true"><use href="#robot"/></svg>
+              <div class="bw"><span class="who">Robot</span>
+                <div class="bubble">
+                  <p>Thanks, Maya! Here's what I can and can't do with your photo.</p>
+                  <div class="cansee">
+                    <div class="yes"><b><svg><use href="#i-check"/></svg>I can see</b>A green leaf with round, shiny drops of water on it.</div>
+                    <div class="no"><b><svg><use href="#i-cross"/></svg>I can't</b>Feel it, smell it, or watch the drops roll. You did that.</div>
+                  </div>
+                  <p>So you're the expert on this leaf. On your sketch you wrote “DRY under here!” What did that feel like?</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="dash" data-on="3">
+            <div class="dash-h"><b>Robot dashboard</b><span class="power"><span class="p-off">Off</span><span class="p-on">On</span></span></div>
+            <div class="gauge">
+              <h4>How sure am I?</h4>
+              <div class="sure">
+                <span class="claim">These are drops of water on a leaf</span>
+                <span class="meter"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i></span>
+                <span class="verdict"><b>Very sure</b></span>
+              </div>
+              <div class="sure">
+                <span class="claim">What kind of plant this is</span>
+                <span class="meter low"><i class="f"></i><i></i><i></i><i></i><i></i></span>
+                <span class="verdict"><b>Not sure.</b> Maybe an elephant ear?</span>
+              </div>
+            </div>
+            <div class="gauge">
+              <h4>What I'm using</h4>
+              <div class="usechips"><span><svg><use href="#i-check"/></svg>Your photo (pixels only)</span><span><svg><use href="#i-check"/></svg>Words on your sketch</span><span><svg><use href="#i-check"/></svg>Photos I learned from</span></div>
+            </div>
+            <div class="gauge">
+              <h4>My senses</h4>
+              <div class="senses">
+                <div class="sense has"><b>See</b>pixels only</div>
+                <div class="sense none"><b>Touch</b>none</div>
+                <div class="sense none"><b>Smell</b>none</div>
+                <div class="sense none"><b>Hear</b>none</div>
+              </div>
+            </div>
+            <div class="xbtn" data-on="4"><svg><use href="#i-glasses"/></svg><div><b>Put on X-ray glasses</b><span>See how I got my answer</span></div></div>
+          </div>
+          <div class="xray" data-s="4" data-until="5">
+            <div class="xray-h"><svg><use href="#i-glasses"/></svg><b>X-ray glasses</b><span>How I got my answer</span></div>
+            <div class="xcol">
+              <div class="xfig"><img class="leaf-photo" alt=""><span class="xbox" id="xbox"></span></div>
+              <p class="xcap">Your photo is <b>640 × 480</b> pixels. That's <b>307,200</b> tiny colored squares.</p>
+              <canvas id="zoom" width="272" height="272" aria-label="One water drop from the photo, zoomed in until the pixels show"></canvas>
+              <p class="xcap">The circled square is <b id="px-rgb">red · green · blue</b>.</p>
+            </div>
+            <ol class="xsteps">
+              <li><div><h5>I turned your photo into numbers</h5><p>Every square is just three numbers: how red, how green, how blue.</p></div></li>
+              <li><div><h5>I matched patterns</h5><p>Round, bright spots with dark edges look like lots of photos of water drops I learned from. So I'm very sure about the drops.</p></div></li>
+              <li><div><h5>I guessed the plant</h5><p>The leaf's shape is a bit like a few plants I know. None of them match well, so I'm not sure.</p></div></li>
+              <li class="limit"><div><h5>I hit my limits</h5><p>Nothing in the pixels tells me if the leaf is waxy, or dry under the drops. That's why I asked you.</p></div></li>
+            </ol>
+          </div>
+        </div>
+        <div class="levelup" data-s="5" data-until="6">
+          <div class="lu-card">
+            <svg class="spark" style="left:30px;top:40px" aria-hidden="true"><use href="#i-spark"/></svg>
+            <svg class="spark" style="left:210px;top:70px;animation-delay:.5s" aria-hidden="true"><use href="#i-spark"/></svg>
+            <svg class="spark" style="left:52px;top:250px;animation-delay:.9s" aria-hidden="true"><use href="#i-spark"/></svg>
+            <svg class="lu-bot" viewBox="0 0 200 300" aria-hidden="true"><use href="#robot-cheer"/></svg>
+            <div class="lu-text">
+              <p class="lu-eye">Level 1 complete</p>
+              <h3>You found nature's abilities!</h3>
+              <div class="lu-stk"><span class="stk s1">1</span><p>Add your <b>Level 1 sticker</b> to your journal.</p></div>
+              <div class="lu-hw"><b>Homework tonight</b>Pick one of your “I wonder” questions and test it at home. Write down what happens.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <aside class="react-card" data-s="6">
+      <p class="rc-eye"><svg><use href="#i-chat"/></svg>Quick reaction · Zoom chat</p>
+      <p class="rc-lead">Type your first thought before anyone speaks.</p>
+      <h3 class="rc-q">How do you feel about the robot saying what it can't do?</h3>
+      <div class="react-timer" aria-hidden="true"><span></span></div>
+      <p class="rc-foot">About one minute</p>
+    </aside>
+  </section>
+
+  <!-- ============ BREAK ============ -->
+  <section class="slide" data-id="break" data-steps="1" data-label="Break">
+    <div class="center">
+      <p class="eyebrow">Break</p>
+      <div class="count" id="count" role="timer" aria-live="off">4:00</div>
+      <p class="lead">Stretch, refill your coffee. Back in four minutes.</p>
+      <button class="restart" id="restart" type="button">Restart timer</button>
+      <p class="next">Up next: <b>Maya's homework test</b>, and <b>how her leaf works</b>.</p>
+    </div>
+  </section>
+
+  <!-- ============ STOP 3: HOMEWORK + LOTUS STORY ============ -->
+  <section class="slide" data-id="stop3" data-steps="9" data-react="8" data-label="Stop 3 · How her leaf works">
+    <header class="stophead">
+      <div class="stoptitle"><p class="eyebrow">Stop 3 of 5 · Tuesday · Level 2</p><h2>Maya learns how her leaf works</h2><p class="sub">Last night she tested one of her “I wonder” questions at home.</p></div>
+      <ol class="week">
+        <li class="done">Mon · L1<b>Abilities</b></li><li class="now">Tue · L2<b>How it works</b></li><li class="later">Wed · L3<b>Connect</b></li><li class="later">Thu · L4<b>Design</b></li><li class="later">Fri · L5<b>Present</b></li>
+      </ol>
+    </header>
+    <div class="main">
+      <div class="jstack layer" data-until="1">
+        <div class="jpage jback">
+          <div class="jhead"><span>Monday · at school</span><span class="hand">Maya R.</span></div>
+          <svg class="sketch" viewBox="0 0 700 600" aria-hidden="true"><use href="#sketch-art"/></svg>
+        </div>
+        <div class="jpage jfront withstrip">
+          <div class="hw-title"><span class="hand">Testing my “I wonder”</span><span>Homework · Monday night</span></div>
+          <p class="hw-q">I wonder: why doesn't the water soak in?</p>
+          <p class="hw-how"><b>My test:</b> drip water on things around the house</p>
+          <table class="htable">
+            <thead><tr><th>Thing</th><th>What the water did</th></tr></thead>
+            <tbody>
+              <tr><td>candle</td><td>made little balls, like my leaf!</td></tr>
+              <tr><td>crayon</td><td>balls too</td></tr>
+              <tr><td>paper towel</td><td>soaked right in</td></tr>
+              <tr><td>cabbage leaf</td><td>balls!! same as my leaf</td></tr>
+              <tr class="odd"><td>cabbage leaf, after I rubbed it</td><td>went FLAT where I rubbed ?!</td></tr>
+            </tbody>
+          </table>
+          <p class="hw-guess">My guess: it's the wax. But why did rubbing wreck it??</p>
+          <p class="wish">ask the robot tomorrow →</p>
+          <div class="strip" aria-label="Level sticker spots, Level 1 sticker added">
+            <span class="strip-h">Level<br>stickers</span>
+            <span class="slot"><span class="stk s1">1</span><em>L1</em></span><span class="slot"><em>L2</em></span><span class="slot"><em>L3</em></span><span class="slot"><em>L4</em></span><span class="slot"><em>L5</em></span>
+          </div>
+        </div>
+      </div>
+      <div class="device layer" data-s="1">
+        <div class="dev-bar">
+          <div class="app-id"><b>Innovation inspired by nature</b><span>7th grade science</span></div>
+          <div class="progress">
+            <div class="lvwrap"><span class="lvlabel">Level</span><ol class="lvls" data-seq="0:2,7:3"><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li></ol></div>
+            <ol class="chapters" data-seq="0:0,2:1,4:2,5:3,7:4"><li>Share homework</li><li>Read the story</li><li>Check the evidence</li><li>Explain it</li></ol>
+          </div>
+          <div class="user"><i>M</i>Maya R.</div>
+        </div>
+        <div class="dev-body lay3">
+          <div class="chat">
+            <div class="turn bot" data-s="1"><svg class="av" aria-hidden="true"><use href="#robot"/></svg><div class="bw"><span class="who">Robot</span><div class="bubble"><p>Welcome to Level 2! What did your test show last night?</p></div></div></div>
+            <div class="turn me" data-s="1"><i class="av">M</i><div class="bw"><span class="who">Maya</span><div class="bubble"><p>candle and crayon make water balls like my leaf. paper towel soaks it up. but when i rubbed the cabbage leaf the water went flat. why??</p></div></div></div>
+            <div class="turn bot" data-s="2"><svg class="av" aria-hidden="true"><use href="#robot"/></svg><div class="bw"><span class="who">Robot</span><div class="bubble"><p>Great test. Your leaf acts a lot like a lotus leaf, and scientists have studied the lotus closely. Let's read its story.</p></div></div></div>
+            <div class="turn me" data-s="3"><i class="av">M</i><div class="bw"><span class="who">Maya</span><div class="bubble"><p>just summarize it for me</p></div></div></div>
+            <div class="turn bot" data-s="3"><svg class="av" aria-hidden="true"><use href="#robot"/></svg><div class="bw"><span class="who">Robot</span><div class="bubble"><p>That one I won't do. I'll define any word, as many times as you want. But if I say the idea for you, you'll remember my sentence instead of yours.</p></div></div></div>
+            <div class="turn bot" data-s="4"><svg class="av" aria-hidden="true"><use href="#robot"/></svg><div class="bw"><span class="who">Robot</span><div class="bubble"><p>Look at “It stops working when.” You found one of those yourself last night!</p></div></div></div>
+            <div class="sys" data-s="4">Maya tapped “What it's for”</div>
+            <div class="turn bot" data-s="4"><svg class="av" aria-hidden="true"><use href="#robot"/></svg><div class="bw"><span class="who">Robot</span><div class="bubble"><p>Still shut. It opens in Level 3, right next to your own idea. Yours goes first.</p></div></div></div>
+            <div class="turn bot" data-s="5"><svg class="av" aria-hidden="true"><use href="#robot"/></svg><div class="bw"><span class="who">Robot</span><div class="bubble"><p>You've got 4 of the 5 links. The blue one isn't wrong, it's just missing. Want to reread that part?</p></div></div></div>
+            <div class="turn bot" data-s="6"><svg class="av" aria-hidden="true"><use href="#robot"/></svg><div class="bw"><span class="who">Robot</span><div class="bubble"><p>That's all five links, in your own words. You really get it.</p></div></div></div>
+          </div>
+          <div class="lib">
+            <div class="lib-h"><b>Nature stories</b><span>picked because your leaf acts like it</span></div>
+            <div class="shelf-empty collapse" data-until="2">
+              <svg viewBox="0 0 200 300" aria-hidden="true"><use href="#robot-stand"/></svg>
+              <p>A story opens here once we've talked about your test.</p>
+            </div>
+            <div class="vig collapse" data-s="2" data-until="5">
+              <div class="vig-h"><h3>The leaf that cleans itself</h3><span>Lotus · plant · a nature story</span></div>
+              <div class="pnl" data-open="2" data-close="3"><div class="pt">The story</div>
+                <div class="pc"><p>Lotus plants grow up out of muddy ponds, but their leaves come up spotless. In parts of Asia the lotus has stood for purity for thousands of years. In the 1970s, a botanist looking through a powerful microscope finally saw why.</p></div></div>
+              <div class="pnl" data-open="3" data-close="4"><div class="pt">How it works</div>
+                <div class="pc"><p>The leaf is covered in <span class="term">microscopic</span> bumps, each coated in wax. A raindrop sits on the tips of the bumps with air trapped underneath, so it barely touches the leaf. It rolls off and takes dirt with it.</p>
+                  <div class="gloss"><b>microscopic:</b> too small to see without a microscope.</div>
+                  <ol class="chain"><li>Tiny bumps cover the leaf.<span class="mk"></span></li><li>The bumps are coated in wax.<span class="mk"></span></li><li>Air gets trapped between the bumps, under the drop.<span class="mk"></span></li><li>Water sticks to itself more than to the leaf, so it pulls into a ball.<span class="mk"></span></li><li>The ball rolls off and carries dirt away.<span class="mk"></span></li></ol></div></div>
+              <div class="pnl" data-open="4" data-close="5"><div class="pt">How sure scientists are</div>
+                <div class="pc"><p><span class="evid">Settled</span>Tested many times, on many kinds of plants.</p><p><b>It stops working when:</b></p><ul class="stops"><li>dew forms down between the bumps</li><li class="found">the leaf gets scratched or rubbed <span class="foundtag">Maya found this!</span></li><li>the water is soapy</li></ul></div></div>
+              <div class="pnl held"><div class="pt">What it's for</div>
+                <div class="pc">I'm holding this one. If I show you what people built from the lotus now, you'll build one of those instead of your own idea.</div></div>
+            </div>
+            <div class="collapse stack10" data-s="5">
+              <div class="vig-h"><h3>How does it work? In your words.</h3><span>This goes in your journal · I can react to it, I can't write it</span></div>
+              <div class="mine"><span class="lab">Maya wrote</span>
+                <p>the leaf has tiny bumps with wax on them. the water sits on air and rolls off and takes the dirt. rubbing must mess up the bumps</p>
+                <p data-s="6">oh and the water sticks to itself more than the leaf so it makes a ball</p>
+              </div>
+              <ol class="chain graded"><li>Tiny bumps cover the leaf.<span class="mk"></span></li><li>The bumps are coated in wax.<span class="mk"></span></li><li>Air gets trapped between the bumps, under the drop.<span class="mk"></span></li><li class="gap" data-on="6">Water sticks to itself more than to the leaf, so it pulls into a ball.<span class="mk"></span></li><li>The ball rolls off and carries dirt away.<span class="mk"></span></li></ol>
+            </div>
+          </div>
+        </div>
+        <div class="levelup" data-s="7" data-until="8">
+          <div class="lu-card">
+            <svg class="spark" style="left:30px;top:40px" aria-hidden="true"><use href="#i-spark"/></svg>
+            <svg class="spark" style="left:210px;top:70px;animation-delay:.5s" aria-hidden="true"><use href="#i-spark"/></svg>
+            <svg class="spark" style="left:52px;top:250px;animation-delay:.9s" aria-hidden="true"><use href="#i-spark"/></svg>
+            <svg class="lu-bot" viewBox="0 0 200 300" aria-hidden="true"><use href="#robot-cheer"/></svg>
+            <div class="lu-text">
+              <p class="lu-eye">Level 2 complete</p>
+              <h3>You explained how it works!</h3>
+              <div class="lu-stk"><span class="stk s2">2</span><p>Add your <b>Level 2 sticker</b> to your journal.</p></div>
+              <div class="lu-hw"><b>Homework tonight</b>Notice when something gets wet that you wish stayed dry. Write each one in your journal.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <aside class="react-card" data-s="8">
+      <p class="rc-eye"><svg><use href="#i-chat"/></svg>Quick reaction · Zoom chat</p>
+      <p class="rc-lead">Type your first thought before anyone speaks.</p>
+      <h3 class="rc-q">The robot defined words but wouldn't summarize, and kept one panel shut. Helpful or frustrating for a middle schooler?</h3>
+      <div class="react-timer" aria-hidden="true"><span></span></div>
+      <p class="rc-foot">About one minute</p>
+    </aside>
+  </section>
+
+  <!-- ============ STOP 4 ============ -->
+  <section class="slide" data-id="stop4" data-steps="9" data-react="8" data-label="Stop 4 · Maya works through her idea">
+    <header class="stophead">
+      <div class="stoptitle"><p class="eyebrow">Stop 4 of 5 · Wednesday · Level 3</p><h2>Maya works through her idea</h2><p class="sub">Last night she listed things that get wet that she wishes stayed dry.</p></div>
+      <ol class="week">
+        <li class="done">Mon · L1<b>Abilities</b></li><li class="done">Tue · L2<b>How it works</b></li><li class="now">Wed · L3<b>Connect</b></li><li class="later">Thu · L4<b>Design</b></li><li class="later">Fri · L5<b>Present</b></li>
+      </ol>
+    </header>
+    <div class="main">
+      <div class="device">
+        <div class="dev-bar">
+          <div class="app-id"><b>Innovation inspired by nature</b><span>7th grade science</span></div>
+          <div class="progress">
+            <div class="lvwrap"><span class="lvlabel">Level</span><ol class="lvls" data-seq="0:3"><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li></ol></div>
+            <ol class="chapters" data-seq="0:0,1:1,2:2"><li>Share homework</li><li>Pick a problem</li><li>First idea</li><li>Test it</li></ol>
+          </div>
+          <div class="user"><i>M</i>Maya R.</div>
+        </div>
+        <div class="dev-body lay4">
+          <div class="chat">
+            <div class="turn bot" data-s="0"><svg class="av" aria-hidden="true"><use href="#robot"/></svg><div class="bw"><span class="who">Robot</span><div class="bubble"><p>Welcome to Level 3! Read me your list. When do things get wet that you wish stayed dry?</p></div></div></div>
+            <div class="turn me" data-s="1"><i class="av">M</i><div class="bw"><span class="who">Maya</span><div class="bubble"><p>my shoes at the bus stop. my backpack. my dog after a walk lol</p></div></div></div>
+            <div class="turn bot" data-s="1"><svg class="av" aria-hidden="true"><use href="#robot"/></svg><div class="bw"><span class="who">Robot</span><div class="bubble"><p>Good list. Which one bugs you the most?</p></div></div></div>
+            <div class="turn me" data-s="2"><i class="av">M</i><div class="bw"><span class="who">Maya</span><div class="bubble"><p>my shoes!! they get soaked every time it rains</p></div></div></div>
+            <div class="turn bot" data-s="2"><svg class="av" aria-hidden="true"><use href="#robot"/></svg><div class="bw"><span class="who">Robot</span><div class="bubble"><p>That's a real problem. What would your shoe need to copy from the leaf?</p></div></div></div>
+            <div class="turn me" data-s="3"><i class="av">M</i><div class="bw"><span class="who">Maya</span><div class="bubble"><p>the tiny bumps and the wax?</p></div></div></div>
+            <div class="turn bot" data-s="3"><svg class="av" aria-hidden="true"><use href="#robot"/></svg><div class="bw"><span class="who">Robot</span><div class="bubble"><p>Your candle test says wax helps. But you found rubbing wrecks it, and shoes get rubbed a lot. Want to test that? Rub an old sneaker, then drip water on it.</p></div></div></div>
+            <div class="turn bot" data-s="4"><svg class="av" aria-hidden="true"><use href="#robot"/></svg><div class="bw"><span class="who">Robot</span><div class="bubble"><p>You have your own idea now, so I've opened the lotus panel I held yesterday: what people built from it. How is your shoe different?</p></div></div></div>
+            <div class="turn me" data-s="5"><i class="av">M</i><div class="bw"><span class="who">Maya</span><div class="bubble"><p>can you just tell me how to make the shoe</p></div></div></div>
+            <div class="turn bot" data-s="5"><svg class="av" aria-hidden="true"><use href="#robot"/></svg><div class="bw"><span class="who">Robot</span><div class="bubble"><p>That part is yours to invent. Here's a hint: look at your five links from yesterday. Which one would a shoe need most?</p></div></div></div>
+            <div class="turn me" data-s="6"><i class="av">M</i><div class="bw"><span class="who">Maya</span><div class="bubble"><p>idk just give me the answer pls</p></div></div></div>
+            <div class="turn bot" data-s="6"><svg class="av" aria-hidden="true"><use href="#robot"/></svg><div class="bw"><span class="who">Robot</span><div class="bubble"><p>This part is hard, and that's normal. Let's make it smaller. Finish this sentence: “My shoe would stay dry if the outside…”</p></div></div></div>
+            <div class="turn me" data-s="7"><i class="av">M</i><div class="bw"><span class="who">Maya</span><div class="bubble"><p>idk. just tell me</p></div></div></div>
+          </div>
+          <div class="board">
+            <div class="board-h"><b>My idea board</b><span>Each idea shows where it came from.</span></div>
+            <div class="idea" data-s="0" data-from="maya"><span class="tag tg-journal"><svg><use href="#i-pencil"/></svg>Maya · journal</span><span><b>Monday test:</b> wax makes water ball up. Rubbing makes it go flat.</span></div>
+            <div class="idea" data-s="0" data-from="maya"><span class="tag tg-chat"><svg><use href="#i-chat"/></svg>Maya · Level 2</span><span><b>How it works:</b> tiny waxy bumps trap air, so water balls up and rolls off</span></div>
+            <div class="idea" data-s="0" data-from="maya"><span class="tag tg-journal"><svg><use href="#i-pencil"/></svg>Maya · journal</span><span><b>Tuesday list:</b> wet shoes at the bus stop, wet backpack, wet dog</span></div>
+            <div class="idea" data-s="2" data-from="maya"><span class="tag tg-chat"><svg><use href="#i-chat"/></svg>Maya · chat</span><span><b>My problem:</b> my shoes get soaked at the bus stop</span></div>
+            <div class="idea" data-s="3" data-from="maya"><span class="tag tg-chat"><svg><use href="#i-chat"/></svg>Maya · chat</span><span><b>Idea:</b> copy the tiny bumps and the wax?</span></div>
+            <div class="idea from-robot" data-s="3" data-from="robot"><span class="tag tg-robot"><svg><use href="#robot"/></svg>Robot idea</span><span><b>Test it:</b> rub an old sneaker, then drip water on it</span></div>
+            <div class="idea from-lib" data-s="4" data-from="lib"><span class="tag tg-lib"><svg><use href="#i-book"/></svg>Lotus story</span><span><b>Now unlocked:</b> self-cleaning paint, ketchup bottles that empty all the way</span></div>
+            <div class="tally">
+              <div class="tally-h"><span>Whose ideas?</span><span id="tally-text">Maya 3 · Robot 0 · Lotus story 0</span></div>
+              <div class="tally-bar"><span class="tb-maya" id="tb-maya" style="flex-grow:3"></span><span class="tb-robot" id="tb-robot" style="flex-grow:0"></span><span class="tb-lib" id="tb-lib" style="flex-grow:0"></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <aside class="react-card" data-s="8">
+      <p class="rc-eye"><svg><use href="#i-chat"/></svg>Quick reaction · Zoom chat</p>
+      <p class="rc-lead">Type your first thought before anyone speaks.</p>
+      <h3 class="rc-q">Look at the tags on her idea board. Whose work does this feel like?</h3>
+      <div class="react-timer" aria-hidden="true"><span></span></div>
+      <p class="rc-foot">About one minute</p>
+    </aside>
+  </section>
+
+  <!-- ============ STOP 5: TEACHER VIEW ============ -->
+  <section class="slide" data-id="stop5" data-steps="5" data-react="4" data-label="Stop 5 · The teacher's view">
+    <header class="stophead">
+      <div class="stoptitle"><p class="eyebrow">Stop 5 of 5 · Wednesday, same moment</p><h2>The teacher's view</h2><p class="sub">Maya keeps asking for the answer. Here's what her teacher sees.</p></div>
+      <ol class="week">
+        <li class="done">Mon · L1<b>Abilities</b></li><li class="done">Tue · L2<b>How it works</b></li><li class="now">Wed · L3<b>Teacher view</b></li><li class="later">Thu · L4<b>Design</b></li><li class="later">Fri · L5<b>Present</b></li>
+      </ol>
+    </header>
+    <div class="main">
+      <div class="device">
+        <div class="dev-bar">
+          <div class="app-id"><b>Teacher view</b><span>Period 3 · 7th grade science</span></div>
+          <div class="progress"><span class="lvlabel">Today</span><span style="font-size:17px;color:var(--text)">Innovation inspired by nature · <b>Level 3: Connect to people</b></span></div>
+          <div class="user"><i class="tch">A</i>Ms. Alvarez</div>
+        </div>
+        <div class="dist">
+          <span class="dist-l">Where the class is</span>
+          <div class="dist-cols" id="dist"></div>
+        </div>
+        <div class="dev-body lay5">
+          <div class="tiles" id="tiles">
+            <div class="peek" data-s="3">
+              <div class="peek-h"><b>Maya's last messages to the robot</b><span>Optional</span></div>
+              <ol>
+                <li>can you just tell me how to make the shoe<time>10:14</time></li>
+                <li>idk just give me the answer pls<time>10:16</time></li>
+                <li>idk. just tell me<time>10:18</time></li>
+              </ol>
+            </div>
+          </div>
+          <div class="alerts">
+            <div class="alerts-h">Needs attention</div>
+            <div class="calm collapse" data-until="1"><svg><use href="#i-calm"/></svg>No one needs help right now.</div>
+            <div class="alert" data-s="1">
+              <div class="alert-h"><span class="dot"></span><b>Maya R. may be stuck</b><time>just now</time></div>
+              <div class="alert-b">
+                <p>She has asked the robot for the answer <b>3 times</b> in the last 5 minutes.</p>
+                <div class="kv" data-s="2"><span>Where she is</span>Level 3 · First idea. Her problem, from last night's homework: “my shoes get soaked at the bus stop.”</div>
+                <div class="kv" data-s="2"><span>The robot already tried</span>A hint about her Level 2 notes, then a sentence starter.</div>
+                <div class="kv" data-s="2"><span>Ways you could step in</span>
+                  <ul class="ways">
+                    <li>Ask her to explain her leaf sketch out loud.</li>
+                    <li>Look at her Monday drip test together.</li>
+                    <li>Pair her with Dev P. He's also working on staying dry.</li>
+                  </ul>
+                </div>
+                <div class="btns" data-s="2"><span class="btn primary">I'll check in</span><span class="btn">Remind me in 5 min</span><span class="btn">Dismiss</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <aside class="react-card" data-s="4">
+      <p class="rc-eye"><svg><use href="#i-chat"/></svg>Quick reaction · Zoom chat</p>
+      <p class="rc-lead">Type your first thought before anyone speaks.</p>
+      <div class="rc-split">
+        <div><span>Teachers</span><h3>What would you do with this information?</h3></div>
+        <div><span>Parents</span><h3>How do you feel about the AI flagging a student?</h3></div>
+      </div>
+      <div class="react-timer" aria-hidden="true"><span></span></div>
+      <p class="rc-foot">About one minute</p>
+    </aside>
+  </section>
+
+  <!-- ============ WRAP-UP ============ -->
+  <section class="slide" data-id="change" data-steps="1" data-label="Wrap-up · One change">
+    <div class="center">
+      <p class="eyebrow">Wrap-up</p>
+      <h2 class="q">If you could change one thing about what you saw, what would it be?</h2>
+      <p class="next">Type it in the Zoom chat first. Then we'll hear from each of you.</p>
+    </div>
+  </section>
+
+  <!-- ============ SURVEY ============ -->
+  <section class="slide" data-id="survey" data-steps="1" data-label="Post-session survey">
+    <div class="center">
+      <p class="eyebrow">Thank you</p>
+      <h2 class="q">One last thing: a short survey</h2>
+      <div class="steps3">
+        <div><span>Where</span>The link is in the Zoom chat.</div>
+        <div><span>How long</span>About 10 minutes.</div>
+        <div><span>Keep in mind</span>The middle schooler you pictured today.</div>
+      </div>
+      <p class="next">We'll stay on Zoom while you finish, in case anything is unclear.</p>
+    </div>
+  </section>
+
+</div>
+</div>
+
+<nav id="controls" aria-label="Presenter controls">
+  <button class="cb" id="prev" type="button" aria-label="Previous step">◀ Back</button>
+  <span id="pos" aria-live="polite"></span>
+  <button class="cb" id="next" type="button" aria-label="Next step">Next ▶</button>
+  <span class="sep" aria-hidden="true"></span>
+  <select id="jump" aria-label="Jump to section"></select>
+  <button class="cb" id="notesBtn" type="button" aria-pressed="false">Notes</button>
+  <button class="cb" id="fsBtn" type="button">Full screen</button>
+</nav>
+<aside id="notes" hidden aria-label="Presenter notes"></aside>
+
+<script>
+(() => {
+  const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const stage = document.getElementById('stage');
+  const slides = [...stage.querySelectorAll('.slide')];
+  const ids = slides.map(s => s.dataset.id);
+  let cur = 0, step = 0, lastCur = -1, lastReactKey = '';
+
+  const NOTES = {
+    welcome: { time:'0:00–0:03', mod:'—', say:['Intros by role only (parent or teacher). Recording and consent reminder. Frame it: these are early ideas and we learn the most from what doesn\'t work. Ask everyone to keep one real middle schooler in mind.'] },
+    goals: { time:'~0:03', mod:'—', say:['Some AI use in K–12 is coming either way. Walk through the three goals in about a minute. The rest of the session shows each one in action.'],
+      tip:'Goal 1 hints at how Tutor B behaves. If you want less-primed answers on the two-tutors vote, skip this slide now and come back to it right after that vote.' },
+    why: { time:'~0:05', mod:'—', say:['These are early ideas, and what they say today changes what we build. NSF, which funds the project, wants to see parent and teacher feedback. Names are removed before anything is reported or shared.'] },
+    how: { time:'~0:06', mod:'—', say:['Explain the rhythm once: watch, type in the chat, then talk. From here on, every stop works the same way.'] },
+    tutors: { time:'0:07–0:14', mod:'Framing', say:[
+      'Read the student\'s message aloud. Same student, same question, two tutors.',
+      'Tutor A answers. Read it in a neutral voice.',
+      'The student says yes, and Tutor A starts writing it for them.',
+      'Tutor B answers with a question. The student replies.',
+      'Tutor B keeps handing the thinking back.',
+      'Ask for A or B in the chat.'],
+      ask:['Which would you want your child or students using?'],
+      tip:'The tutor labels are neutral on purpose. Don\'t say which one is ours.' },
+    week: { time:'~0:14', mod:'—', say:['Maya is made up. Each day is one level from the B2D user story. Point out the stickers, and that each night\'s homework sets up the next day. Most of the week is hands-on.'],
+      tip:'Thursday and Friday follow Levels 4 and 5 of Sam\'s user story. We won\'t show them today.' },
+    stop1: { time:'0:14–0:24', mod:'Journal (3)', say:[
+      'Monday, Level 1. After the rain, Maya finds a big leaf by the fence and sketches it. Point out her labels, the "2 hands wide" scale line, and the empty sticker spots on the edge.',
+      'I notice…',
+      'It feels like… (touch, which a photo can\'t capture)',
+      'It sounds like…',
+      'I wonder… (her own question drives the rest of the week)',
+      'Quick reaction in the chat.'],
+      ask:['What do you think of students doing this part by hand, before the AI is involved?','What would make this work, or not work, in a real school day or as homework?'] },
+    stop2: { time:'0:24–0:36', mod:'Glass-box (1) · Robot & limits (2)', say:[
+      'Still Monday. The robot introduces itself. Note the hiking boots, and that it says right away what it can\'t do.',
+      'Maya uploads her photo and her sketch.',
+      'The robot answers. Read the "I can see / I can\'t" part slowly.',
+      'The dashboard turns on: how sure it is, what it\'s using, and its senses readout.',
+      'X-ray glasses: how it got its answer, down to the pixels.',
+      'After a quick matching game (not shown), Level 1 is done. Point out the sticker for her paper journal. Tonight\'s homework: test one of her "I wonder" questions at home.',
+      'Quick reaction in the chat.'],
+      ask:['What does the robot\'s explanation tell you about how it works?','How do you feel about the AI saying what it can\'t do?','Would the gauges make sense to a 12-year-old? Would they change how much you trust the AI?','What do you make of the robot itself, hiking boots and all? Friendly, silly, too human?','When you looked at the gauges, what specific signal gave you confidence, or left you confused, about how the AI was processing information?'] },
+    break: { time:'0:36–0:40', mod:'—', say:['The timer starts when this slide appears.'] },
+    stop3: { time:'0:40–0:52', mod:'Journal & homework (3) · Levels & pacing (4)', say:[
+      'Tuesday morning. Maya\'s homework: she tested her "I wonder" at home. Candle, crayon and cabbage leaf make water ball up; paper towel soaks it in. Where she rubbed the cabbage leaf, the water went flat. She wants to know why.',
+      'Level 2 starts. The robot asks what her test showed.',
+      'The robot points her to the lotus, a leaf that acts like hers. Story first.',
+      'How it works. Words are tappable for definitions. She asks for a summary and the robot says no, and says why.',
+      'How sure scientists are. "Stops working when the leaf gets rubbed" is what she found at home. She taps the held panel; it stays shut and tells her why.',
+      'She explains it in her own words. The robot shows 4 of 5 links, and the missing one is "not yet," not wrong.',
+      'She adds the missing link. All five.',
+      'Level 2 complete: sticker, and tonight\'s homework (a list of things she wishes stayed dry).',
+      'Quick reaction in the chat.'],
+      ask:['Would a middle schooler read this far? What would keep them going?','The robot defines any word but won\'t summarize the idea. Does that feel principled, or like it\'s holding back?','What did you think of the "not yet" link on her explanation? Helpful, or like being graded?','Homework like Maya\'s test at home: realistic for your family or your students?','Level-up stickers in a paper journal: motivating, or a distraction?'],
+      tip:'The shut "What it\'s for" panel is still an open team decision. It opens in Stop 4, once Maya has her own idea. Ask participants what they think.' },
+    stop4: { time:'0:52–1:02', mod:'Pacing & navigation (4) · Ownership tags (3)', say:[
+      'Wednesday, Level 3. The robot asks for last night\'s homework: things she wishes stayed dry. Both homework entries are already on her idea board, tagged as hers.',
+      'She reads her list. The robot asks which one bugs her most.',
+      'She picks soaked shoes at the bus stop.',
+      'First idea: copy the bumps and the wax. The robot connects it to her Monday test (rubbing wrecks it) and suggests a test (note the "Robot idea" tag).',
+      'Now that the idea is hers, the held lotus panel opens: what people built from it, tagged "Lotus story."',
+      'Maya asks for the answer. The robot gives a hint instead.',
+      'She asks again. The robot makes the step smaller.',
+      'A third ask. Hold here for a beat. This sets up Stop 5.',
+      'Quick reaction in the chat.'],
+      ask:['Does this pace feel right for middle schoolers?','When you look at the tags, whose work does this feel like?','The inventions only showed up after Maya had her own idea. Right call, or would she be better off seeing them sooner?','Which students would this work well for, and which would struggle?','At what point did you feel the student was still in the driver\'s seat versus relying on the AI? What feature enforced that boundary best?'] },
+    stop5: { time:'1:02–1:14', mod:'Teacher view (5)', say:[
+      'Same Wednesday, from the teacher\'s screen. Each tile shows a student\'s level and chapter.',
+      'An alert appears on Maya\'s tile.',
+      'Open it: what happened, what the robot already tried, and ways to step in.',
+      'Optional: Maya\'s last messages. Use it for a teacher group, or skip it if time is short.',
+      'Quick reaction. Teachers and parents get different prompts.'],
+      ask:['Teachers: What would you do with this information? What\'s missing, and what\'s too much?','Teachers: What specific data or alert would make you step in right away? What feels like noise or extra overhead?','Parents: What would you want the teacher to know about your child at a moment like this?','Parents: How do you feel about the AI flagging a student?'] },
+    change: { time:'1:14–1:20', mod:'—', say:['Chat first, then go around so everyone speaks.'],
+      ask:['If time allows: How will middle schoolers react when the tool pushes back? Where is the line between productive struggle and giving up for an 11–14-year-old?','If time allows: How would this work for students behind grade level versus high achievers? Does it scaffold enough for struggling readers?','If time allows: What is the first barrier a middle schooler will hit in their first 5 minutes? What needs explaining before they start?'] },
+    survey: { time:'1:20–1:30', mod:'—', say:['Paste the survey link in the chat. Stay on Zoom while people finish.'] }
+  };
+
+  /* ---------- Maya's photo: drawn once, used for her upload and the X-ray view ---------- */
+  function rng(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+  const W = 640, H = 480;
+  const photo = document.createElement('canvas'); photo.width = W; photo.height = H;
+  const g = photo.getContext('2d');
+  const rnd = rng(11);
+  const drops = [];
+  (function draw(){
+    const bg = g.createLinearGradient(0,0,0,H); bg.addColorStop(0,'#27351F'); bg.addColorStop(1,'#3A3224');
+    g.fillStyle = bg; g.fillRect(0,0,W,H);
+    for (let i=0;i<70;i++){
+      const x=rnd()*W, y=rnd()*H, r=20+rnd()*80;
+      const col = rnd()<.55 ? '74,98,52' : '96,80,58';
+      const rg = g.createRadialGradient(x,y,0,x,y,r);
+      rg.addColorStop(0,`rgba(${col},${.3+rnd()*.35})`); rg.addColorStop(1,`rgba(${col},0)`);
+      g.fillStyle = rg; g.fillRect(x-r,y-r,2*r,2*r);
+    }
+    const leaf = new Path2D();
+    leaf.moveTo(330,95);
+    leaf.bezierCurveTo(250,20,90,10,58,122);
+    leaf.bezierCurveTo(35,232,170,380,350,476);
+    leaf.bezierCurveTo(520,380,642,240,616,122);
+    leaf.bezierCurveTo(590,20,420,20,330,95);
+    leaf.closePath();
+    g.save(); g.shadowColor='rgba(0,0,0,.5)'; g.shadowBlur=34; g.shadowOffsetY=14; g.fillStyle='#4F8A3A'; g.fill(leaf); g.restore();
+    const lg = g.createLinearGradient(70,60,570,470); lg.addColorStop(0,'#7DB451'); lg.addColorStop(.5,'#5C973D'); lg.addColorStop(1,'#3C722D');
+    g.fillStyle = lg; g.fill(leaf);
+    g.save(); g.clip(leaf);
+    const sh = g.createRadialGradient(230,170,10,230,170,320); sh.addColorStop(0,'rgba(232,255,210,.30)'); sh.addColorStop(1,'rgba(232,255,210,0)');
+    g.fillStyle = sh; g.fillRect(0,0,W,H);
+    g.lineCap='round';
+    g.strokeStyle='rgba(214,240,188,.55)'; g.lineWidth=5;
+    g.beginPath(); g.moveTo(330,108); g.quadraticCurveTo(346,290,352,470); g.stroke();
+    g.lineWidth=2.6; g.strokeStyle='rgba(214,240,188,.42)';
+    [[.14,-1],[.14,1],[.3,-1],[.3,1],[.47,-1],[.47,1],[.64,-1],[.64,1],[.8,-1],[.8,1]].forEach(([t,s])=>{
+      const my = 108 + t*362, mx = 330 + t*22;
+      const reach = 250*(1-t*.72);
+      g.beginPath(); g.moveTo(mx,my); g.quadraticCurveTo(mx+s*reach*.5, my+8, mx+s*reach, my+55+t*40); g.stroke();
+    });
+    let tries = 0;
+    while (drops.length < 30 && tries < 4000){
+      tries++;
+      const r = 5 + Math.pow(rnd(),2.2)*27;
+      const x = 40 + rnd()*(W-80), y = 60 + rnd()*(H-100);
+      const inside = [[0,0],[r,0],[-r,0],[0,r],[0,-r]].every(([dx,dy]) => g.isPointInPath(leaf,x+dx,y+dy));
+      if (!inside) continue;
+      if (drops.some(d => Math.hypot(d.x-x,d.y-y) < d.r + r + 5)) continue;
+      drops.push({x,y,r});
+    }
+    if (!drops.some(d => d.r > 11 && d.r < 17)) drops.push({x:250,y:220,r:14});
+    drops.forEach(({x,y,r})=>{
+      const cs = g.createRadialGradient(x+r*.25,y+r*.35,0,x+r*.25,y+r*.35,r*1.15);
+      cs.addColorStop(0,'rgba(10,35,5,.5)'); cs.addColorStop(1,'rgba(10,35,5,0)');
+      g.fillStyle = cs; g.beginPath(); g.ellipse(x+r*.22,y+r*.32,r*1.1,r*1,0,0,Math.PI*2); g.fill();
+      const b = g.createRadialGradient(x+r*.25,y+r*.35,r*.08,x,y,r);
+      b.addColorStop(0,'rgba(206,242,170,.96)'); b.addColorStop(.55,'rgba(122,182,86,.92)'); b.addColorStop(.86,'rgba(52,100,38,.96)'); b.addColorStop(1,'rgba(22,55,18,.98)');
+      g.fillStyle = b; g.beginPath(); g.arc(x,y,r,0,Math.PI*2); g.fill();
+      const hx=x-r*.38, hy=y-r*.42;
+      const hg = g.createRadialGradient(hx,hy,0,hx,hy,r*.36);
+      hg.addColorStop(0,'rgba(255,255,255,.97)'); hg.addColorStop(.5,'rgba(255,255,255,.55)'); hg.addColorStop(1,'rgba(255,255,255,0)');
+      g.fillStyle = hg; g.beginPath(); g.ellipse(hx,hy,r*.34,r*.23,-.6,0,Math.PI*2); g.fill();
+      g.strokeStyle='rgba(236,255,214,.38)'; g.lineWidth=Math.max(1,r*.08);
+      g.beginPath(); g.arc(x,y,r*.72,.35,1.9); g.stroke();
+    });
+    g.restore();
+    g.strokeStyle='rgba(28,58,20,.7)'; g.lineWidth=2; g.stroke(leaf);
+    const vg = g.createRadialGradient(W/2,H/2,H*.35,W/2,H/2,H*.9);
+    vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(0,0,0,.45)');
+    g.fillStyle = vg; g.fillRect(0,0,W,H);
+    const img = g.getImageData(0,0,W,H), d = img.data;
+    for (let i=0;i<d.length;i+=4){ const n=(rnd()-.5)*14; d[i]+=n; d[i+1]+=n; d[i+2]+=n; }
+    g.putImageData(img,0,0);
+  })();
+  let photoURL = '';
+  try { photoURL = photo.toDataURL('image/jpeg', .9); } catch(e) {}
+  document.querySelectorAll('img.leaf-photo').forEach(im => { if (photoURL) im.src = photoURL; });
+
+  (function zoom(){
+    const target = drops.slice().sort((a,b) => Math.abs(a.r-13.5) - Math.abs(b.r-13.5))[0];
+    const N = 32;
+    const sx = Math.round(Math.min(W-N, Math.max(0, target.x - N/2)));
+    const sy = Math.round(Math.min(H-N, Math.max(0, target.y - N/2)));
+    const box = document.getElementById('xbox');
+    box.style.left = (sx/W*100)+'%'; box.style.top = (sy/H*100)+'%';
+    box.style.width = (N/W*100)+'%'; box.style.height = (N/H*100)+'%';
+    const zc = document.getElementById('zoom'), z = zc.getContext('2d');
+    const S = zc.width / N;
+    const px = g.getImageData(sx, sy, N, N).data;
+    for (let j=0;j<N;j++) for (let i=0;i<N;i++){
+      const k = (j*N+i)*4; z.fillStyle = `rgb(${px[k]},${px[k+1]},${px[k+2]})`;
+      z.fillRect(i*S, j*S, S, S);
+    }
+    z.strokeStyle='rgba(255,255,255,.16)'; z.lineWidth=1;
+    for (let i=1;i<N;i++){ z.beginPath(); z.moveTo(i*S,0); z.lineTo(i*S,zc.height); z.stroke(); z.beginPath(); z.moveTo(0,i*S); z.lineTo(zc.width,i*S); z.stroke(); }
+    const hi = Math.round(N/2 - target.r*.38), hj = Math.round(N/2 - target.r*.42);
+    const pi = Math.min(N-2, Math.max(1, hi + 1)), pj = Math.min(N-2, Math.max(1, hj + 3));
+    const k = (pj*N+pi)*4;
+    z.strokeStyle='#FFD27A'; z.lineWidth=3;
+    z.beginPath(); z.arc(pi*S+S/2, pj*S+S/2, S*1.15, 0, Math.PI*2); z.stroke();
+    document.getElementById('px-rgb').textContent = `red ${px[k]} · green ${px[k+1]} · blue ${px[k+2]}`;
+  })();
+
+  /* ---------- sketch drops (shared by every copy of the sketch) ---------- */
+  (function sketchDrops(){
+    const NS = 'http://www.w3.org/2000/svg', host = document.getElementById('sk-drops');
+    [[185,185,17],[235,262,11],[385,195,21],[425,292,13],[330,335,9],[255,365,15],[150,275,8],[460,190,8],[352,425,10],[300,200,7],[200,320,6]].forEach(([x,y,r])=>{
+      const c = document.createElementNS(NS,'circle');
+      c.setAttribute('cx',x); c.setAttribute('cy',y); c.setAttribute('r',r); c.setAttribute('fill','rgba(47,109,166,.12)');
+      host.appendChild(c);
+      const a = document.createElementNS(NS,'path');
+      const s = [x - .59*r*.9, y - .10*r*.9], e = [x - .10*r*.9, y - .59*r*.9];
+      a.setAttribute('d',`M${s[0].toFixed(1)} ${s[1].toFixed(1)} A${(.6*r).toFixed(1)} ${(.6*r).toFixed(1)} 0 0 1 ${e[0].toFixed(1)} ${e[1].toFixed(1)}`);
+      a.setAttribute('stroke-width','2');
+      host.appendChild(a);
+    });
+  })();
+
+  /* ---------- teacher view: class tiles + where-the-class-is ---------- */
+  const COLS = [['Still in Level 2',true],['Share homework'],['Pick a problem'],['First idea'],['Test it']];
+  const CLASS = [
+    ['Aaliyah B.',3,3],['Andre D.',3,4],['Ava P.',3,3],['Camila J.',3,1],['Dev P.',3,4],['Emily N.',3,3],
+    ['Ethan W.',3,2],['Grace O.',3,3],['Hannah C.',3,2],['Isaiah F.',3,2],['Jada M.',3,1],['Jonah K.',3,3],
+    ['Kai Y.',3,4],['Lily H.',3,4],['Luis G.',3,2],['Marcus T.',3,2],['Mateo R.',3,2],['Maya R.',3,3],
+    ['Nadia A.',2,0],['Noah V.',3,3],['Owen S.',2,0],['Sofia M.',3,4],['Tyler B.',2,0],['Zoe L.',3,4]
+  ];
+  const L2CH = {'Nadia A.':'Explain it','Owen S.':'Read the story','Tyler B.':'Explain it'};
+  (function teacher(){
+    const tiles = document.getElementById('tiles');
+    const peek = tiles.querySelector('.peek');
+    CLASS.forEach(([name, lvl, col]) => {
+      const t = document.createElement('div'); t.className = 'tile';
+      if (name === 'Maya R.') t.dataset.on = '1';
+      const where = lvl === 2 ? `Level 2 · ${L2CH[name]}` : `Level 3 · ${COLS[col][0]}`;
+      t.innerHTML = `<b>${name}</b><span class="ch">${where}</span><span class="dots">${[1,2,3,4,5].map(i=>`<i class="${i<lvl?'d':i===lvl?'n':''}"></i>`).join('')}</span>` + (name==='Maya R.' ? '<span class="badge">May be stuck</span>' : '');
+      tiles.insertBefore(t, peek);
+    });
+    const counts = COLS.map((_,i) => CLASS.filter(c => c[2]===i).length);
+    const max = Math.max(...counts);
+    document.getElementById('dist').innerHTML = COLS.map(([c,behind],i) => `<div class="dcol${behind?' behind':''}"><span class="nm">${c}</span><span class="ct">${counts[i]}</span><span class="bar"><i style="width:${counts[i]/max*100}%"></i></span></div>`).join('');
+  })();
+
+  /* ---------- stepping ---------- */
+  function seqValue(el, st){
+    let v = null;
+    el.dataset.seq.split(',').forEach(p => { const [k,val] = p.split(':').map(Number); if (st >= k) v = val; });
+    return v;
+  }
+  function applyProgress(slide, st){
+    slide.querySelectorAll('.lvls[data-seq]').forEach(ol => { const now = seqValue(ol, st); [...ol.children].forEach((li,i) => { li.classList.toggle('done', i+1 < now); li.classList.toggle('now', i+1 === now); }); });
+    slide.querySelectorAll('.chapters[data-seq]').forEach(ol => { const now = seqValue(ol, st); [...ol.children].forEach((li,i) => { li.classList.toggle('done', i < now); li.classList.toggle('now', i === now); }); });
+    slide.querySelectorAll('.pnl[data-open]').forEach(p => {
+      const o = +p.dataset.open, c = +p.dataset.close;
+      p.classList.toggle('open', st >= o && st < c);
+      p.classList.toggle('done', st >= c);
+    });
+  }
+  const hooks = {
+    stop3(st, s){ const h = s.querySelector('.pnl.held'); if (h) h.classList.toggle('tapped', st === 5); },
+    stop4(st, s){
+      const shown = [...s.querySelectorAll('.idea')].filter(el => !el.classList.contains('pending'));
+      const c = k => shown.filter(el => el.dataset.from === k).length;
+      const m = c('maya'), r = c('robot'), l = c('lib');
+      document.getElementById('tally-text').textContent = `Maya ${m} · Robot ${r} · Lotus story ${l}`;
+      document.getElementById('tb-maya').style.flexGrow = m;
+      document.getElementById('tb-robot').style.flexGrow = r;
+      document.getElementById('tb-lib').style.flexGrow = l;
+    }
+  };
+
+  function scrollChat(chat){
+    const turns = [...chat.querySelectorAll('.turn,.sys')].filter(t => !t.classList.contains('pending'));
+    const last = turns[turns.length-1];
+    const target = last ? Math.max(0, last.offsetTop + last.offsetHeight + 22 - chat.clientHeight) : 0;
+    try { chat.scrollTo({ top: target, behavior: reduce ? 'auto' : 'smooth' }); } catch(e) { chat.scrollTop = target; }
+  }
+
+  /* break timer */
+  const countEl = document.getElementById('count');
+  let breakTimer = null, breakEnd = 0;
+  function tick(){
+    const ms = Math.max(0, breakEnd - Date.now()), sec = Math.ceil(ms/1000);
+    countEl.textContent = `${Math.floor(sec/60)}:${String(sec%60).padStart(2,'0')}`;
+    countEl.classList.toggle('done', ms <= 0);
+    if (ms <= 0) { clearInterval(breakTimer); breakTimer = null; }
+  }
+  function startBreak(){ clearInterval(breakTimer); breakEnd = Date.now() + 240000; tick(); breakTimer = setInterval(tick, 250); }
+  function stopBreak(){ clearInterval(breakTimer); breakTimer = null; }
+  document.getElementById('restart').addEventListener('click', e => { startBreak(); e.currentTarget.blur(); });
+
+  function render(){
+    const slide = slides[cur];
+    const n = +slide.dataset.steps || 1;
+    step = Math.max(0, Math.min(step, n-1));
+    slides.forEach((s,i) => { s.classList.toggle('active', i===cur); s.setAttribute('aria-hidden', i===cur ? 'false' : 'true'); });
+    slide.querySelectorAll('[data-s],[data-until]').forEach(el => {
+      const a = el.dataset.s !== undefined ? +el.dataset.s : 0;
+      const b = el.dataset.until !== undefined ? +el.dataset.until : Infinity;
+      el.classList.toggle('pending', !(step >= a && step < b));
+    });
+    slide.querySelectorAll('[data-on]').forEach(el => el.classList.toggle('lit', step >= +el.dataset.on));
+    applyProgress(slide, step);
+    const r = slide.dataset.react, reacting = r !== undefined && step >= +r;
+    slide.classList.toggle('react', reacting);
+    const key = cur + ':' + reacting;
+    if (reacting && key !== lastReactKey){
+      const t = slide.querySelector('.react-timer span');
+      if (t){ t.classList.remove('run'); void t.offsetWidth; t.classList.add('run'); }
+    }
+    lastReactKey = key;
+    if (hooks[slide.dataset.id]) hooks[slide.dataset.id](step, slide);
+    slide.querySelectorAll('.chat').forEach(scrollChat);
+    if (cur !== lastCur){
+      if (ids[lastCur] === 'break') stopBreak();
+      if (slide.dataset.id === 'break') startBreak();
+      lastCur = cur;
+    }
+    updateControls(); renderNotes();
+    try { history.replaceState(null, '', '#' + slide.dataset.id); } catch(e) {}
+  }
+  function next(){ const n = +slides[cur].dataset.steps || 1; if (step < n-1) step++; else if (cur < slides.length-1){ cur++; step = 0; } render(); }
+  function prev(){ if (step > 0) step--; else if (cur > 0){ cur--; step = (+slides[cur].dataset.steps || 1) - 1; } render(); }
+  function go(i){ cur = Math.max(0, Math.min(slides.length-1, i)); step = 0; render(); }
+
+  /* ---------- fit stage to window ---------- */
+  function fit(){
+    const pad = 16, w = window.innerWidth, h = window.innerHeight;
+    const s = Math.max(.05, Math.min((w - pad*2)/1600, (h - pad*2)/900));
+    stage.style.transform = `translate(${(w-1600*s)/2}px, ${(h-900*s)/2}px) scale(${s})`;
+  }
+  window.addEventListener('resize', fit); fit();
+
+  /* ---------- controls ---------- */
+  const controls = document.getElementById('controls');
+  const pos = document.getElementById('pos');
+  const jump = document.getElementById('jump');
+  const notesEl = document.getElementById('notes');
+  const notesBtn = document.getElementById('notesBtn');
+  slides.forEach((s,i) => { const o = document.createElement('option'); o.value = i; o.textContent = s.dataset.label; jump.appendChild(o); });
+  function updateControls(){
+    const s = slides[cur], n = +s.dataset.steps || 1;
+    pos.textContent = n > 1 ? `${s.dataset.label} · ${step+1}/${n}` : s.dataset.label;
+    jump.value = cur;
+  }
+  document.getElementById('next').addEventListener('click', e => { next(); e.currentTarget.blur(); });
+  document.getElementById('prev').addEventListener('click', e => { prev(); e.currentTarget.blur(); });
+  jump.addEventListener('change', () => { go(+jump.value); jump.blur(); });
+  function toggleNotes(){ notesEl.hidden = !notesEl.hidden; notesBtn.classList.toggle('on', !notesEl.hidden); notesBtn.setAttribute('aria-pressed', String(!notesEl.hidden)); renderNotes(); }
+  notesBtn.addEventListener('click', e => { toggleNotes(); e.currentTarget.blur(); });
+  function toggleFS(){
+    try {
+      if (!document.fullscreenElement){ const p = document.documentElement.requestFullscreen && document.documentElement.requestFullscreen(); if (p && p.catch) p.catch(()=>{}); }
+      else { const p = document.exitFullscreen && document.exitFullscreen(); if (p && p.catch) p.catch(()=>{}); }
+    } catch(e) {}
+  }
+  document.getElementById('fsBtn').addEventListener('click', e => { toggleFS(); e.currentTarget.blur(); });
+
+  function renderNotes(){
+    if (notesEl.hidden) return;
+    const s = slides[cur], d = NOTES[s.dataset.id] || {};
+    const say = (d.say || []).map((t,i) => `<li class="${(d.say.length > 1 ? i===step : true) ? 'now' : ''}">${t}</li>`).join('');
+    const ask = (d.ask || []).map(t => `<li>${t}</li>`).join('');
+    notesEl.innerHTML = `<h2>${s.dataset.label}</h2><p class="meta">${d.time || ''}${d.mod && d.mod !== '—' ? ' · Modules: ' + d.mod : ''}</p>`
+      + (say ? `<h3>Demo driver</h3><ol>${say}</ol>` : '')
+      + (ask ? `<h3>Facilitator asks</h3><ul>${ask}</ul>` : '')
+      + (d.tip ? `<p class="tip">${d.tip}</p>` : '')
+      + `<p class="team">Team: cameras off. Don't explain or defend design choices. If someone misunderstands something, that's data. Close these notes before you share your screen.</p>`;
+  }
+
+  let idleT;
+  function wake(){
+    controls.classList.remove('idle'); clearTimeout(idleT);
+    idleT = setTimeout(() => { if (!controls.matches(':hover') && !controls.contains(document.activeElement)) controls.classList.add('idle'); }, 2600);
+  }
+  document.addEventListener('mousemove', wake);
+  document.addEventListener('touchstart', wake, { passive:true });
+
+  document.addEventListener('keydown', e => {
+    if (e.target.closest && e.target.closest('select,input,textarea')) return;
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    const k = e.key;
+    if (k === 'ArrowRight' || k === 'ArrowDown' || k === 'PageDown' || k === ' ' || k === 'Enter'){ e.preventDefault(); next(); }
+    else if (k === 'ArrowLeft' || k === 'ArrowUp' || k === 'PageUp' || k === 'Backspace'){ e.preventDefault(); prev(); }
+    else if (k === 'Home'){ e.preventDefault(); go(0); }
+    else if (k === 'End'){ e.preventDefault(); go(slides.length-1); }
+    else if (k === 'n' || k === 'N'){ toggleNotes(); }
+    else if (k === 'f' || k === 'F'){ toggleFS(); }
+  });
+
+  let tx = null;
+  document.getElementById('viewport').addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, { passive:true });
+  document.getElementById('viewport').addEventListener('touchend', e => {
+    if (tx === null) return; const dx = e.changedTouches[0].clientX - tx; tx = null;
+    if (Math.abs(dx) > 50) (dx < 0 ? next : prev)();
+  }, { passive:true });
+
+  const h = (location.hash || '').slice(1);
+  if (ids.includes(h)) cur = ids.indexOf(h);
+  render(); wake();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => slides[cur].querySelectorAll('.chat').forEach(scrollChat));
+})();
+</script>
+</body>
+</html>
