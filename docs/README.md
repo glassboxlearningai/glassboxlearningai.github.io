@@ -1,3 +1,9 @@
 # Design documents
 
-PDFs of finalized design documents go here, for example the design themes (v3.1), the standards alignment, and the co-design artifact suite. Keep each file under 5 MB so it can also be uploaded to Research.gov.
+| File | What it is |
+| --- | --- |
+| `glass-box-design-specification-v1.pdf` | The lesson, eleven design themes, AI guardrails, and standards alignment (v1.0, October 2026) |
+| `glass-box-prototype-walkthrough.pdf` | Screens from the prototypes, from the first wireframes to *A Week with Maya* |
+| `glass-box-co-design-process.pdf` | How the team worked, key design decisions, and the parent and teacher review |
+
+Keep each file under 5 MB so it can also be uploaded to Research.gov as a supporting document.

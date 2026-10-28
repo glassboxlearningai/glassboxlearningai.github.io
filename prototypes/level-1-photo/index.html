@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Glass-Box · Photo Return — Clickable Wireframe</title>
+<style>
+  :root{
+    --bg:#FFFFFF;
+    --field:#F4F5F6;
+    --field-2:#EAECED;
+    --rule:#B9BEC2;
+    --rule-soft:#D8DBDE;
+    --ink:#22262A;
+    --dim:#6B7278;
+    --faint:#9AA1A6;
+    /* the only colours in the file — each one carries a state meaning */
+    --unsure:#9A6B14;
+    --unsure-bg:#FBF3E3;
+    --held:#2C7A57;
+    --held-bg:#E8F2EC;
+    --needs:#1B5E86;
+    --needs-bg:#E5EFF5;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:15px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    padding:22px 20px 60px;}
+  .wrap{max-width:960px;margin:0 auto;}
+
+  /* ---------- chrome ---------- */
+  .top{border-bottom:1px solid var(--rule);padding-bottom:13px;margin-bottom:16px;
+    display:flex;flex-wrap:wrap;gap:10px 16px;align-items:baseline;}
+  .top h1{font-size:17px;margin:0;font-weight:650;}
+  .top .sub{font-family:var(--mono);font-size:11px;color:var(--faint);flex:1 1 200px;}
+  button{font:inherit;cursor:pointer;}
+  .tool{font-family:var(--mono);font-size:11px;padding:6px 11px;background:#fff;
+    border:1px solid var(--rule);color:var(--dim);}
+  .tool[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink);}
+  .tool:focus-visible{outline:2px solid var(--needs);outline-offset:2px;}
+
+  /* ---------- state ribbon ---------- */
+  .ribbon{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:18px;}
+  .st{font-family:var(--mono);font-size:10.5px;letter-spacing:.04em;padding:5px 9px;
+    border:1px dashed var(--rule-soft);color:var(--faint);background:var(--field);}
+  .st.done{color:var(--dim);border-style:solid;}
+  .st.now{background:var(--ink);color:#fff;border:1px solid var(--ink);}
+
+  /* ---------- layout ---------- */
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;}
+  .panel{border:1px dashed var(--rule);background:var(--field);}
+  .panel > .ph{font-family:var(--mono);font-size:10.5px;color:var(--faint);
+    padding:7px 11px;border-bottom:1px dashed var(--rule-soft);letter-spacing:.05em;}
+  .panel > .pb{padding:11px;}
+
+  /* photo */
+  .photo{position:relative;height:236px;background:#DCDFDA;overflow:hidden;}
+  .photo.empty{display:flex;align-items:center;justify-content:center;
+    background:var(--field-2);color:var(--faint);font-family:var(--mono);font-size:11px;}
+  .g1{position:absolute;left:0;right:0;bottom:0;height:64%;background:#93A387;}
+  .g2{position:absolute;left:8%;bottom:6%;width:32%;height:26%;background:#7E9273;border-radius:40%;}
+  .g3{position:absolute;left:62%;bottom:26%;width:19%;height:30%;background:#A8B79C;border-radius:50% 50% 40% 40%;}
+  .g4{position:absolute;left:68%;bottom:47%;width:26px;height:26px;background:#D9C263;border-radius:50%;}
+  .g5{position:absolute;left:0;right:0;top:0;height:36%;background:#C9CFD2;}
+  .rgn{position:absolute;border:1.5px solid var(--ink);opacity:0;transition:opacity .3s;}
+  .rgn.on{opacity:1;}
+  .rgn span{position:absolute;top:-17px;left:-1px;background:var(--ink);color:#fff;
+    font-family:var(--mono);font-size:9.5px;padding:1px 5px;white-space:nowrap;}
+  .beam{position:absolute;left:0;right:0;height:40px;opacity:0;
+    background:linear-gradient(180deg,transparent,rgba(34,38,42,.22),transparent);}
+
+  /* robot */
+  .bot{display:flex;flex-direction:column;align-items:center;padding:4px 0 0;}
+  .bhead{width:76px;height:44px;border:1.5px solid var(--rule);background:#fff;
+    display:flex;align-items:center;justify-content:center;gap:12px;}
+  .eye{width:9px;height:9px;border-radius:50%;background:var(--dim);}
+  .bneck{width:14px;height:8px;border-left:1.5px solid var(--rule);border-right:1.5px solid var(--rule);}
+  .pane{position:relative;width:100%;min-height:150px;border:1.5px solid var(--rule);
+    background:#fff;padding:9px;display:flex;flex-direction:column;gap:6px;}
+  .paneL{position:absolute;bottom:3px;right:6px;font-family:var(--mono);
+    font-size:9px;color:var(--faint);}
+  .empt{color:var(--faint);font-family:var(--mono);font-size:10.5px;margin:auto;}
+
+  .card{border:1px solid var(--rule-soft);background:var(--field);padding:6px 9px;
+    font-size:12.5px;display:flex;gap:8px;align-items:center;justify-content:space-between;}
+  .card .lbl{font-family:var(--mono);font-size:11.5px;}
+  .card .w{font-family:var(--mono);font-size:9.5px;color:var(--faint);white-space:nowrap;}
+  .card.faint{opacity:.55;}
+  .card.unsure{border:1px dashed var(--unsure);background:var(--unsure-bg);color:var(--unsure);}
+  .card.held{border:1px dashed var(--held);background:var(--held-bg);color:var(--held);}
+  .card.needs{border:1px dashed var(--needs);background:var(--needs-bg);color:var(--needs);}
+  .card.mine{border:1px solid var(--ink);background:#fff;}
+  .card.gone{opacity:.3;text-decoration:line-through;}
+  .fixbtn{font-family:var(--mono);font-size:9.5px;padding:2px 6px;background:#fff;
+    border:1px solid var(--rule);color:var(--dim);}
+
+  .bays{display:flex;gap:7px;width:100%;margin-top:7px;}
+  .bay{flex:1;border:1px dashed var(--rule-soft);padding:5px 8px;font-family:var(--mono);
+    font-size:9.5px;color:var(--faint);display:flex;justify-content:space-between;}
+  .bay.lit{border-color:var(--held);color:var(--held);}
+
+  /* dialogue */
+  .talk{margin-top:16px;border:1px dashed var(--rule);background:var(--field);padding:14px 16px;}
+  .say{margin:0 0 12px;font-size:15px;}
+  .say b{font-family:var(--mono);font-size:10.5px;color:var(--faint);
+    display:block;font-weight:400;letter-spacing:.05em;margin-bottom:3px;}
+  .acts{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+  .act{padding:8px 14px;background:#fff;border:1px solid var(--ink);color:var(--ink);font-size:14px;}
+  .act.ghost{border-color:var(--rule);color:var(--dim);}
+  .act:focus-visible{outline:2px solid var(--needs);outline-offset:2px;}
+  input[type=text]{font:inherit;padding:8px 10px;border:1px solid var(--rule);
+    background:#fff;min-width:230px;flex:1 1 240px;}
+  input[type=text]:focus-visible{outline:2px solid var(--needs);outline-offset:0;}
+
+  /* notes */
+  .notes{display:none;margin-top:14px;border:1px solid var(--ink);background:#fff;padding:13px 16px;}
+  body.shownotes .notes{display:block;}
+  .notes h4{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;margin:0 0 8px;
+    color:var(--dim);font-weight:500;}
+  .notes p{margin:0 0 9px;font-size:13.5px;}
+  .notes p:last-child{margin:0;}
+  .notes .q{border-left:2px solid var(--ink);padding-left:11px;font-style:italic;}
+
+  .foot{margin-top:26px;border-top:1px solid var(--rule-soft);padding-top:12px;
+    font-family:var(--mono);font-size:10.5px;color:var(--faint);}
+
+  @media (max-width:760px){ .cols{grid-template-columns:1fr;} }
+  @media (prefers-reduced-motion:reduce){ *{animation:none!important;transition:none!important;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top">
+    <h1>Level 1 — back inside with a photo</h1>
+    <span class="sub">clickable wireframe · deliberately unfinished · not a design</span>
+    <button class="tool" id="notesBtn" aria-pressed="false">Design notes</button>
+    <button class="tool" id="resetBtn">Start over</button>
+  </div>
+
+  <div class="ribbon" id="ribbon"></div>
+
+  <div class="cols">
+    <div class="panel">
+      <div class="ph">what the student uploaded</div>
+      <div class="pb" style="padding:0;">
+        <div class="photo empty" id="photo">no photo yet</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="ph">what the robot is working with</div>
+      <div class="pb">
+        <div class="bot">
+          <div class="bhead"><div class="eye"></div><div class="eye"></div></div>
+          <div class="bneck"></div>
+          <div class="pane" id="pane"><div class="empt" id="paneEmpty">empty</div>
+            <span class="paneL">glass pane</span></div>
+          <div class="bays">
+            <div class="bay" id="bayHold"><span>holding</span><span id="nHold">0</span></div>
+            <div class="bay" id="bayFixed"><span>you corrected</span><span id="nFixed">0</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="talk">
+    <p class="say" id="say"><b>ROBOT</b><span id="sayText"></span></p>
+    <div class="acts" id="acts"></div>
+  </div>
+
+  <div class="notes" id="notes">
+    <h4 id="nh">DESIGN NOTE</h4>
+    <div id="nb"></div>
+  </div>
+
+  <p class="foot">Glass-Box · visible-thinking prototype · v0.1 · for the sprint review, not for students</p>
+</div>
+
+<script>
+(function(){
+  var STATES=["looking","considering","unsure","setting aside","needs you","holding"];
+  var ribbon=document.getElementById('ribbon');
+  var photo=document.getElementById('photo'), pane=document.getElementById('pane');
+  var sayText=document.getElementById('sayText'), acts=document.getElementById('acts');
+  var nh=document.getElementById('nh'), nb=document.getElementById('nb');
+  var nHold=document.getElementById('nHold'), nFixed=document.getElementById('nFixed');
+  var bayHold=document.getElementById('bayHold');
+
+  var step=0, fixed=0, corrections=[], studentAbility="";
+  // what the robot thinks it sees. c2 is wrong on purpose. c3 it cannot tell.
+  var cards=[
+    {id:'c1', label:'grass',      w:'pretty sure',  state:'ok'},
+    {id:'c2', label:'moss',       w:'less sure',    state:'ok'},
+    {id:'c3', label:'?',          w:"can't tell",   state:'unsure'}
+  ];
+
+  function ribbonAt(name){
+    ribbon.innerHTML='';
+    STATES.forEach(function(s){
+      var i=document.createElement('span');
+      var idx=STATES.indexOf(name);
+      i.className='st'+(s===name?' now':(STATES.indexOf(s)<idx?' done':''));
+      i.textContent=s;
+      ribbon.appendChild(i);
+    });
+  }
+  function drawPhoto(regions){
+    photo.className='photo';
+    photo.innerHTML='<div class="g5"></div><div class="g1"></div><div class="g2"></div>'+
+      '<div class="g3"></div><div class="g4"></div><div class="beam" id="beam"></div>'+
+      '<div class="rgn" id="r1" style="left:6%;bottom:4%;width:36%;height:30%"><span>grass</span></div>'+
+      '<div class="rgn" id="r2" style="left:59%;bottom:22%;width:25%;height:36%"><span>moss</span></div>'+
+      '<div class="rgn" id="r3" style="left:64%;bottom:44%;width:16%;height:16%"><span>?</span></div>';
+    (regions||[]).forEach(function(r,i){
+      setTimeout(function(){
+        var el=document.getElementById(r); if(el) el.classList.add('on');
+      },500+i*450);
+    });
+  }
+  function renderPane(list){
+    pane.innerHTML='';
+    if(!list.length){
+      pane.innerHTML='<div class="empt">empty</div>';
+    } else {
+      list.forEach(function(c){
+        var d=document.createElement('div');
+        d.className='card'+(c.cls?' '+c.cls:'');
+        d.innerHTML='<span class="lbl">'+c.label+'</span><span class="w">'+(c.w||'')+'</span>';
+        if(c.fixable){
+          var b=document.createElement('button');
+          b.className='fixbtn'; b.textContent='wrong';
+          b.onclick=function(){ fixCard(c.id); };
+          d.appendChild(b);
+        }
+        pane.appendChild(d);
+      });
+    }
+    var l=document.createElement('span'); l.className='paneL'; l.textContent='glass pane';
+    pane.appendChild(l);
+  }
+  function say(t){ sayText.textContent=t; }
+  function note(title,html){ nh.textContent=title; nb.innerHTML=html; }
+  function btn(text,fn,ghost){
+    var b=document.createElement('button');
+    b.className='act'+(ghost?' ghost':''); b.textContent=text; b.onclick=fn;
+    acts.appendChild(b); return b;
+  }
+  function textInput(ph,onSubmit,btnText){
+    var i=document.createElement('input');
+    i.type='text'; i.placeholder=ph; acts.appendChild(i);
+    var b=btn(btnText||'Send',function(){ if(i.value.trim()) onSubmit(i.value.trim()); });
+    i.addEventListener('keydown',function(e){ if(e.key==='Enter') b.click(); });
+    setTimeout(function(){i.focus();},60);
+    return i;
+  }
+
+  function fixCard(id){
+    acts.innerHTML='';
+    var c=cards.find(function(x){return x.id===id;});
+    say('Okay — what is it actually?');
+    textInput('type what it really is', function(v){
+      c.label=v; c.w='you told me'; c.cls='mine'; c.fixed=true;
+      fixed++; nFixed.textContent=String(fixed);
+      corrections.push(v);
+      go(4);
+    },'Fix it');
+    btn('never mind', function(){ go(4); }, true);
+  }
+
+  var steps=[
+    // 0 — arrive
+    function(){
+      ribbonAt('looking');
+      photo.className='photo empty'; photo.textContent='no photo yet';
+      renderPane([]);
+      say("You're back. Show me what you found out there.");
+      btn('Upload my photo', function(){ go(1); });
+      note('BEFORE ANYTHING HAPPENS',
+        '<p>The student has been outside. The activity resumes on their own material, which is the only reason any of this is worth watching.</p>'+
+        '<p class="q">Teachers: does the outside step survive a real period, and what is the fallback for a student who came back with nothing?</p>');
+    },
+    // 1 — looking
+    function(){
+      ribbonAt('looking');
+      drawPhoto(['r1','r2','r3']);
+      setTimeout(function(){
+        var b=document.getElementById('beam');
+        if(b){ b.style.opacity=1;
+          b.animate([{transform:'translateY(-40px)'},{transform:'translateY(240px)'}],
+            {duration:1600,easing:'ease-in-out'});
+          setTimeout(function(){ b.style.opacity=0; },1700);
+        }
+      },150);
+      renderPane([]);
+      say('Let me look. I go region by region — watch the boxes appear in the order I find things.');
+      setTimeout(function(){ acts.innerHTML=''; btn('Next', function(){ go(2); }); },2300);
+      note('STATE 1 · LOOKING',
+        '<p>This replaces "while I analyse, watch this video." The analysis is the thing worth watching, and it is happening on the student\u2019s own photo.</p>'+
+        '<p class="q">Chu: can the real pipeline expose the order and the regions, or is this a dramatisation? If it cannot, we cut this state rather than fake it.</p>');
+    },
+    // 2 — considering
+    function(){
+      ribbonAt('considering');
+      renderPane([
+        {id:'c1',label:'grass',w:'pretty sure'},
+        {id:'c2',label:'moss',w:'less sure',cls:'faint'},
+        {id:'c3',label:'?',w:"can't tell",cls:'unsure'}
+      ]);
+      say("Here's everything I've got. Solid means I'm fairly confident. Faded means less. The dashed one I genuinely cannot work out.");
+      btn('Next', function(){ go(3); });
+      note('STATE 2 · CONSIDERING',
+        '<p>The student sees that an AI answer was chosen out of alternatives with different weights, rather than looked up. That is the most useful thing this screen teaches, and it costs one panel.</p>'+
+        '<p class="q">Is weight legible without numbers? We deliberately avoided percentages — they invite a precision nobody has.</p>');
+    },
+    // 3 — unsure, must resolve
+    function(){
+      ribbonAt('unsure');
+      say("This yellow one I can't identify. I need you for this — what is it?");
+      textInput('what is it?', function(v){
+        var c=cards.find(function(x){return x.id==='c3';});
+        c.label=v; c.w='you told me'; c.cls='mine'; c.fixed=true;
+        fixed++; nFixed.textContent=String(fixed);
+        renderPane([
+          {id:'c1',label:'grass',w:'pretty sure'},
+          {id:'c2',label:'moss',w:'less sure',cls:'faint'},
+          {id:'c3',label:v,w:'you told me',cls:'mine'}
+        ]);
+        go(4);
+      },'Tell it');
+      note('STATE 3 · UNSURE  →  the handoff',
+        '<p>The activity stops here. This is the moment that makes "I am a machine, I need a human" true rather than decorative, and it does not depend on confidence telemetry: the robot always hands back at least one thing to resolve.</p>'+
+        '<p class="q">Everyone: does this read as honesty, or as performed humility? That is the question this whole prototype exists to test.</p>');
+    },
+    // 4 — corrections
+    function(){
+      ribbonAt('setting aside');
+      var list=cards.map(function(c){
+        return {id:c.id,label:c.label,w:c.w,cls:c.cls||(c.w==='less sure'?'faint':''),
+          fixable:!c.fixed};
+      });
+      renderPane(list);
+      say('Now check my work. Did I get any of the others wrong? Tap "wrong" on anything that\u2019s off.');
+      btn("they're fine", function(){ go(5); }, true);
+      note('STATE 4 · SETTING ASIDE  ·  the robot is wrong on purpose',
+        '<p>The middle label is incorrect. A demo where the machine identifies everything correctly teaches the room nothing and quietly promises accuracy we cannot deliver. The scene that proves the thesis is a student fixing the machine.</p>'+
+        '<p class="q">What happens when the student corrects something and is themselves wrong? We have no answer yet. Gilson and Haruo will.</p>');
+    },
+    // 5 — needs you / ability
+    function(){
+      ribbonAt('needs you');
+      var list=cards.map(function(c){
+        return {id:c.id,label:c.label,w:c.w,cls:c.cls||''};
+      });
+      list.push({id:'gap',label:'? \u00b7 your turn',w:'',cls:'needs'});
+      renderPane(list);
+      say("Now the part I can't do at all. Pick one of these and tell me what it's good at — not what it is, what it can do.");
+      textInput('e.g. grass — gets stepped on and pops back up', function(v){
+        studentAbility=v; go(6);
+      },'That\u2019s mine');
+      note('STATE 5 · NEEDS YOU  ·  and G3',
+        '<p>The gap is a shape, not a sentence. The student can see a card-sized hole in the machine.</p>'+
+        '<p>This is also where G3 gets satisfied: the student names an ability before the robot offers any of its own.</p>'+
+        '<p class="q">What counts as good enough to continue? "grass, it\u2019s green" is not an ability. Does the robot press once, twice, or accept and move on?</p>');
+    },
+    // 6 — held reveal
+    function(){
+      ribbonAt('holding');
+      bayHold.classList.add('lit'); nHold.textContent='3';
+      renderPane([
+        {id:'you',label:studentAbility,w:'yours',cls:'mine'},
+        {id:'h1',label:'grass \u00b7 bends flat and springs back',w:'was held',cls:'held'},
+        {id:'h2',label:'moss \u00b7 holds water in a thin mat',w:'was held',cls:'held'},
+        {id:'h3',label:'dandelion \u00b7 seeds travel on air',w:'was held',cls:'held'}
+      ]);
+      say("I had these the whole time. I didn't want to put them in your head before you had one of your own. Yours goes first.");
+      btn('Start over', function(){ location.reload(); }, true);
+      note('STATE 6 · HOLDING  ·  the signature move',
+        '<p>The robot had answers and visibly kept them. A black box hides its reasoning; an unhelpful AI hides its reasoning and refuses. This shows the student there was something there, and why it stayed put until now.</p>'+
+        '<p class="q">Does the student\u2019s card ever get corrected, or only added to? Our reading of the framework says added to, never overwritten \u2014 but that is a decision, not a fact.</p>');
+    }
+  ];
+
+  function go(n){ step=n; acts.innerHTML=''; steps[n](); }
+
+  document.getElementById('notesBtn').addEventListener('click',function(){
+    var on=document.body.classList.toggle('shownotes');
+    this.setAttribute('aria-pressed',String(on));
+  });
+  document.getElementById('resetBtn').addEventListener('click',function(){ location.reload(); });
+
+  go(0);
+})();
+</script>
+</body>
+</html>

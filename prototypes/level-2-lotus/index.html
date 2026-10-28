@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Glass-Box · Finding the Vignette (Lotus) — Clickable Wireframe</title>
+<style>
+  :root{
+    --bg:#FFFFFF;
+    --field:#F4F5F6;
+    --field-2:#EAECED;
+    --rule:#B9BEC2;
+    --rule-soft:#D8DBDE;
+    --ink:#22262A;
+    --dim:#6B7278;
+    --faint:#9AA1A6;
+    --unsure:#9A6B14;
+    --unsure-bg:#FBF3E3;
+    --held:#2C7A57;
+    --held-bg:#E8F2EC;
+    --needs:#1B5E86;
+    --needs-bg:#E5EFF5;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:15px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    padding:22px 20px 60px;}
+  .wrap{max-width:980px;margin:0 auto;}
+
+  .top{border-bottom:1px solid var(--rule);padding-bottom:13px;margin-bottom:16px;
+    display:flex;flex-wrap:wrap;gap:10px 16px;align-items:baseline;}
+  .top h1{font-size:17px;margin:0;font-weight:650;}
+  .top .sub{font-family:var(--mono);font-size:11px;color:var(--faint);flex:1 1 200px;}
+  button{font:inherit;cursor:pointer;}
+  .tool{font-family:var(--mono);font-size:11px;padding:6px 11px;background:#fff;
+    border:1px solid var(--rule);color:var(--dim);}
+  .tool[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink);}
+  .tool:focus-visible,.act:focus-visible,input:focus-visible{outline:2px solid var(--needs);outline-offset:2px;}
+
+  .ribbon{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:18px;}
+  .st{font-family:var(--mono);font-size:10.5px;letter-spacing:.03em;padding:5px 9px;
+    border:1px dashed var(--rule-soft);color:var(--faint);background:var(--field);}
+  .st.done{color:var(--dim);border-style:solid;}
+  .st.now{background:var(--ink);color:#fff;border:1px solid var(--ink);}
+
+  .stagearea{border:1px dashed var(--rule);background:var(--field);min-height:290px;padding:14px 16px;}
+  .ph{font-family:var(--mono);font-size:10.5px;color:var(--faint);letter-spacing:.05em;
+    margin:0 0 11px;padding-bottom:7px;border-bottom:1px dashed var(--rule-soft);}
+
+  .searchbox{background:#fff;border:1px solid var(--rule);padding:11px 13px;margin-bottom:11px;}
+  .searchbox.locked{background:var(--field-2);border-style:dashed;color:var(--faint);}
+  .searchbox .lab{font-family:var(--mono);font-size:9.5px;color:var(--faint);
+    letter-spacing:.05em;display:block;margin-bottom:5px;}
+  .fake-input{border:1px solid var(--rule-soft);background:var(--field);padding:7px 9px;
+    font-family:var(--mono);font-size:12px;color:var(--faint);}
+  .maprow{display:flex;flex-wrap:wrap;gap:9px;align-items:center;font-size:13px;margin-bottom:12px;}
+  .chip{font-family:var(--mono);font-size:11px;padding:3px 8px;border:1px solid var(--rule);background:#fff;}
+  .chip.fn{border-color:var(--ink);background:var(--ink);color:#fff;}
+  .arrow{color:var(--faint);font-family:var(--mono);}
+
+  .hit{background:#fff;border:1px solid var(--rule-soft);padding:9px 12px;margin-bottom:7px;
+    display:flex;justify-content:space-between;gap:10px;align-items:center;font-size:13.5px;}
+  .hit .fnlab{font-family:var(--mono);font-size:9.5px;color:var(--faint);display:block;}
+  .hit.live{border:1px solid var(--ink);}
+  .hit.draft{border-style:dashed;opacity:.75;}
+  .mini{font-family:var(--mono);font-size:9.5px;padding:3px 7px;background:#fff;
+    border:1px solid var(--rule);color:var(--dim);white-space:nowrap;}
+  .kingdom{font-family:var(--mono);font-size:9.5px;color:var(--faint);border:1px solid var(--rule-soft);
+    padding:1px 6px;}
+
+  .vig{background:#fff;border:1px solid var(--rule);}
+  .vig .vh{padding:9px 13px;border-bottom:1px solid var(--rule-soft);}
+  .vig .vh h3{margin:0;font-size:15px;}
+  .vig .vh .fnline{font-family:var(--mono);font-size:9.5px;color:var(--faint);margin-top:3px;}
+  .pnl{border-top:1px dashed var(--rule-soft);}
+  .pnl .pt{font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--faint);
+    padding:8px 13px;display:flex;justify-content:space-between;align-items:center;gap:8px;}
+  .pnl .pc{padding:0 13px 13px;font-size:14px;}
+  .pnl.shut .pt{background:var(--field);color:var(--faint);}
+  .pnl.hold{border-top:1px dashed var(--held);}
+  .pnl.hold .pt{background:var(--held-bg);color:var(--held);}
+  .pnl.hold .pc{color:var(--held);font-size:13.5px;}
+  .lockicon{font-family:var(--mono);font-size:10px;}
+
+  .chain{list-style:none;padding:0;margin:9px 0 0;}
+  .chain li{border-left:2px solid var(--rule-soft);padding:5px 0 5px 11px;margin-bottom:5px;
+    font-size:13.5px;}
+  .chain li.lit{border-left-color:var(--held);}
+  .chain li.unlit{border-left-color:var(--needs);color:var(--needs);}
+  .chain li .mark{font-family:var(--mono);font-size:9.5px;float:right;color:var(--faint);}
+  .chain li.lit .mark{color:var(--held);}
+  .chain li.unlit .mark{color:var(--needs);}
+
+  .term{border-bottom:1px dotted var(--dim);cursor:pointer;}
+  .gloss{background:var(--field);border-left:2px solid var(--ink);padding:8px 11px;
+    margin:9px 0 0;font-size:13px;}
+  .evid{font-family:var(--mono);font-size:10px;padding:2px 7px;border:1px solid var(--held);
+    color:var(--held);background:var(--held-bg);}
+  .breaks{border-left:2px solid var(--unsure);background:var(--unsure-bg);padding:8px 11px;
+    margin:0 0 8px;font-size:13.5px;color:#6B4E0F;}
+
+  .talk{margin-top:15px;border:1px dashed var(--rule);background:var(--field);padding:14px 16px;}
+  .say{margin:0 0 12px;font-size:15px;}
+  .say b{font-family:var(--mono);font-size:10.5px;color:var(--faint);
+    display:block;font-weight:400;letter-spacing:.05em;margin-bottom:3px;}
+  .acts{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+  .act{padding:8px 14px;background:#fff;border:1px solid var(--ink);color:var(--ink);font-size:14px;}
+  .act.ghost{border-color:var(--rule);color:var(--dim);}
+  input[type=text]{font:inherit;padding:8px 10px;border:1px solid var(--rule);
+    background:#fff;min-width:240px;flex:1 1 280px;}
+
+  .notes{display:none;margin-top:14px;border:1px solid var(--ink);background:#fff;padding:13px 16px;}
+  body.shownotes .notes{display:block;}
+  .notes h4{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;margin:0 0 8px;
+    color:var(--dim);font-weight:500;}
+  .notes p{margin:0 0 9px;font-size:13.5px;}
+  .notes p:last-child{margin:0;}
+  .notes .q{border-left:2px solid var(--ink);padding-left:11px;font-style:italic;}
+
+  .foot{margin-top:26px;border-top:1px solid var(--rule-soft);padding-top:12px;
+    font-family:var(--mono);font-size:10.5px;color:var(--faint);}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top">
+    <h1>Level 2 — finding out how it works <span style="font-weight:400;color:#6B7278;">· lotus</span></h1>
+    <span class="sub">clickable wireframe · deliberately unfinished · not a design</span>
+    <button class="tool" id="notesBtn" aria-pressed="false">Design notes</button>
+    <button class="tool" id="resetBtn">Start over</button>
+  </div>
+
+  <div class="ribbon" id="ribbon"></div>
+
+  <div class="stagearea">
+    <p class="ph" id="stageLabel">the library</p>
+    <div id="stage"></div>
+  </div>
+
+  <div class="talk">
+    <p class="say"><b>ROBOT</b><span id="sayText"></span></p>
+    <div class="acts" id="acts"></div>
+  </div>
+
+  <div class="notes"><h4 id="nh">DESIGN NOTE</h4><div id="nb"></div></div>
+
+  <p class="foot">Glass-Box · vignette stretch · lotus variant · v0.1 · content is the lotus record from the vignette spec</p>
+</div>
+
+<script>
+(function(){
+  var STEPS=["say what you picked","name the function","search","the story",
+             "the mechanism","when it fails","what it's for","your turn"];
+  var ribbon=document.getElementById('ribbon'), stage=document.getElementById('stage');
+  var stageLabel=document.getElementById('stageLabel');
+  var sayText=document.getElementById('sayText'), acts=document.getElementById('acts');
+  var nh=document.getElementById('nh'), nb=document.getElementById('nb');
+
+  var studentFunction="";
+
+  var CHAIN=[
+    {t:"The leaf surface is covered in tiny bumps, and each bump is coated in even tinier wax crystals.",
+     k:["bump","rough","texture","wax","crystal","tiny","microscopic","pillar"]},
+    {t:"Water can't sink down into the gaps between the bumps, so air stays trapped under the drop.",
+     k:["air","trapped","gap","between","can't get in","cannot","sink","pocket"]},
+    {t:"The drop is resting on air and bump-tips instead of on the leaf, so it pulls itself into a ball.",
+     k:["ball","bead","round","sphere","sits on","resting","barely touch","little contact"]},
+    {t:"A ball on a tilted leaf rolls instead of sliding or sitting.",
+     k:["roll","tilt","slope","angle","slide","run off","runs off"]},
+    {t:"Dirt sticks to the water more strongly than it sticks to the leaf, so the drop carries it off.",
+     k:["dirt","dust","clean","picks up","carries","takes","sticks to the water","grabs"]}
+  ];
+
+  var TERMS={
+    "wax crystals":"Very small solid bits of a waxy, greasy substance. Water does not stick to wax \u2014 same reason it beads on a waxed car.",
+    "micro-texture":"A pattern of bumps far too small to see. \u201cMicro\u201d means about a thousandth of a millimetre.",
+    "beads up":"Pulls itself into a rounded drop instead of spreading out flat.",
+    "contact":"How much of the drop is actually touching the leaf. Less contact means less sticking."
+  };
+
+  function ribbonAt(i){
+    ribbon.innerHTML='';
+    STEPS.forEach(function(s,j){
+      var e=document.createElement('span');
+      e.className='st'+(j===i?' now':(j<i?' done':''));
+      e.textContent=s; ribbon.appendChild(e);
+    });
+  }
+  function say(t){ sayText.textContent=t; }
+  function note(t,h){ nh.textContent=t; nb.innerHTML=h; }
+  function btn(txt,fn,ghost){
+    var b=document.createElement('button');
+    b.className='act'+(ghost?' ghost':''); b.textContent=txt; b.onclick=fn;
+    acts.appendChild(b); return b;
+  }
+  function input(ph,fn,label){
+    var i=document.createElement('input'); i.type='text'; i.placeholder=ph; acts.appendChild(i);
+    var b=btn(label||'Send',function(){ if(i.value.trim()) fn(i.value.trim()); });
+    i.addEventListener('keydown',function(e){ if(e.key==='Enter') b.click(); });
+    setTimeout(function(){i.focus();},60); return i;
+  }
+  function vigShell(panels){
+    return '<div class="vig"><div class="vh"><h3>Staying clean without ever being washed</h3>'+
+      '<div class="fnline">vig-lotus-self-cleaning \u00b7 sub-organismal \u00b7 filed under: SHED PARTICLES \u00b7 REPEL LIQUID '+
+      '&nbsp;&nbsp;<span class="evid">SETTLED</span></div></div>'+panels+'</div>';
+  }
+  function pnl(title,body,cls,right){
+    return '<div class="pnl'+(cls?' '+cls:'')+'"><div class="pt"><span>'+title+'</span>'+
+      '<span class="lockicon">'+(right||'')+'</span></div>'+
+      (body?'<div class="pc">'+body+'</div>':'')+'</div>';
+  }
+  function heldPanel(){
+    return pnl('WHAT IT\u2019S FOR',
+      'Held until Level 3. People have already built things from this one, and the list is right here. If you read it now you\u2019ll build one of theirs instead of yours. I\u2019m not hiding it \u2014 you\u2019ll open it, next to your own idea.',
+      'hold shut','\u25c7 held');
+  }
+
+  var steps=[
+    // 0
+    function(){
+      ribbonAt(0); stageLabel.textContent='the library \u00b7 nothing searched yet';
+      stage.innerHTML='<div class="searchbox locked"><span class="lab">SEARCH BY FUNCTION</span>'+
+        '<div class="fake-input">locked \u2014 tell me what it needs to do first</div></div>'+
+        '<p style="font-size:13.5px;color:#6B7278;margin:11px 0 0;">The library is organised by what things <i>do</i>, not by what they <i>are</i>. There is no box to type a plant name into.</p>';
+      say('From your journal: \u201cafter it rained the water was sitting on the leaves in little balls and then it just rolled off.\u201d That\u2019s a good one. But I can\u2019t look it up yet.');
+      btn('Why not?',function(){ go(1); });
+      note('BEFORE THE SEARCH',
+        '<p>The student arrives with a plant they saw. The library is indexed by function. The mismatch is the lesson, which is why the box starts locked.</p>'+
+        '<p>Note this is a real journal entry, not a worked example the robot supplied. The current Level 2 draft opens by walking the student through the lotus <i>for</i> them \u2014 mechanism, animation, paint, ketchup bottle \u2014 before they have chosen anything. This screen is the alternative to that page.</p>'+
+        '<p class="q">Sam: function-only search for Level 2, or a species index as a fallback after N failed attempts?</p>');
+    },
+    // 1
+    function(){
+      ribbonAt(1); stageLabel.textContent='the library \u00b7 naming the function';
+      stage.innerHTML='<div class="searchbox locked"><span class="lab">SEARCH BY FUNCTION</span>'+
+        '<div class="fake-input">still locked</div></div>'+
+        '<p style="font-size:13.5px;color:#6B7278;margin:11px 0 0;">Nothing is filed under \u201clotus\u201d or \u201cleaf.\u201d Things are filed under jobs: <span class="chip">SHED PARTICLES</span> <span class="chip">REPEL LIQUID</span> <span class="chip">ABSORB IMPACT</span> <span class="chip">TRAP HEAT</span> \u2026</p>';
+      say('Because I need it as a job, not a thing. Forget it\u2019s a leaf for a second \u2014 what is it actually doing to that water?');
+      input('e.g. it doesn\u2019t let the water stick', function(v){ studentFunction=v; go(2); },'That\u2019s the job');
+      note('STEP 2 \u00b7 THE GENERALIZATION MOVE, MADE STRUCTURAL',
+        '<p>G2 in the plumbing rather than in a prompt. The student cannot proceed without stripping the context out of their own observation, because the index only accepts stripped-out terms.</p>'+
+        '<p>Free text, not a menu of functions. The mapping gets shown in the next step so the student watches their words being <i>translated</i> rather than replaced.</p>'+
+        '<p class="q">Which phrase goes in the journal and the decision log \u2014 the student\u2019s, or the controlled term? Manyu will want the student\u2019s.</p>');
+    },
+    // 2
+    function(){
+      ribbonAt(2); stageLabel.textContent='search results \u00b7 SHED PARTICLES / REPEL LIQUID';
+      stage.innerHTML=
+        '<div class="maprow"><span class="chip">\u201c'+studentFunction+'\u201d</span>'+
+        '<span class="arrow">\u2192 the library files that under \u2192</span>'+
+        '<span class="chip fn">REPEL LIQUID</span><span class="chip fn">SHED PARTICLES</span></div>'+
+        '<div class="hit live"><span><b>Staying clean without ever being washed</b>'+
+          '<span class="fnlab">lotus leaf \u00b7 sub-organismal \u00b7 settled</span></span>'+
+          '<span class="kingdom">plant</span><span class="mini">open</span></div>'+
+        '<div class="hit draft"><span><b>Skin that won\u2019t wet even underground</b>'+
+          '<span class="fnlab">springtail \u00b7 sub-organismal \u00b7 record not written yet</span></span>'+
+          '<span class="kingdom">animal \u00b7 insect</span><span class="mini">draft</span></div>'+
+        '<div class="hit draft"><span><b>Ridged skin that stops things settling on it</b>'+
+          '<span class="fnlab">shark \u00b7 sub-organismal \u00b7 record not written yet</span></span>'+
+          '<span class="kingdom">animal \u00b7 fish</span><span class="mini">draft</span></div>';
+      say('Three. Your plant, a tiny soil insect, and a shark. You went looking for a leaf and the library handed you an animal that lives in dirt and one that lives in the ocean \u2014 because all three have the same job.');
+      btn('Open the leaf one',function(){ go(3); });
+      note('STEP 3 \u00b7 WHAT THE ABSTRACTION BUYS YOU',
+        '<p>This is the payoff of function indexing, and the reason to make the search painful. Searching by organism gets you what you already thought of. Searching by <i>job</i> gets you strangers \u2014 here, across three kingdoms.</p>'+
+        '<p>The woodpecker variant of this screen teaches that science moves. This one teaches something quieter and more useful: the generalization move is not a hoop, it is what produces ideas you could not have had.</p>'+
+        '<p><b>Honest about the content:</b> only the lotus record exists. The other two are marked <i>draft</i> rather than dressed up, because a demo that fakes a full library is the exact failure this project is named after.</p>'+
+        '<p class="q">Scope question for the room: 8 functions \u00d7 3\u20135 vignettes is roughly 30 records. Two functions fully built inside the planning phase is realistic. Which two?</p>');
+    },
+    // 3 — story
+    function(){
+      ribbonAt(3); stageLabel.textContent='vignette \u00b7 the story';
+      stage.innerHTML=vigShell(
+        pnl('THE STORY','Lotus plants grow rooted in pond mud, and their leaves come up out of it spotless. No rinsing, nothing wiping them. For a long time people assumed the leaves must simply be very smooth, so nothing could get a grip. In the 1990s two botanists put one under an electron microscope and found the opposite: the surface is not smooth at all. It is covered in bumps.')+
+        pnl('HOW IT WORKS','','shut','\u2014')+
+        pnl('WHEN IT DOESN\u2019T WORK','','shut','\u2014')+
+        heldPanel()
+      );
+      say('Story first, then the how. Notice the twist \u2014 everyone guessed smooth, and it turned out to be the opposite of smooth.');
+      btn('Open: how it works',function(){ go(4); });
+      note('STEP 4 \u00b7 STORY BEFORE MECHANISM',
+        '<p>Content rule, not a UI rule: the hook is capped at 90 words and has to earn the next panel. Gilson and Haruo are read-checking exactly this \u2014 whether a middle-schooler wants the next paragraph.</p>'+
+        '<p>The hook here carries a small reversal (smooth \u2192 bumpy) so the mechanism arrives as the answer to a question the student now has.</p>'+
+        '<p>Four panels visible, one already shut and green. The student can see there is more before they have opened anything.</p>');
+    },
+    // 4 — mechanism
+    function(){
+      ribbonAt(4); stageLabel.textContent='vignette \u00b7 the mechanism';
+      var chain='<ol class="chain" style="list-style:none;">'+CHAIN.map(function(c){
+        return '<li>'+c.t+'</li>';}).join('')+'</ol>';
+      var body='The leaf has a <span class="term" data-t="micro-texture">micro-texture</span> \u2014 bumps far too small to see \u2014 and every bump is coated in '+
+        '<span class="term" data-t="wax crystals">wax crystals</span>. Water cannot push down into the gaps between the bumps, so a layer of air stays trapped underneath. '+
+        'The drop ends up sitting on air and bump-tips, with almost no <span class="term" data-t="contact">contact</span> with the leaf itself, so it '+
+        '<span class="term" data-t="beads up">beads up</span> into a near-sphere. Tilt the leaf and a sphere rolls. As it goes it collects dust, because the dust sticks to water better than it sticks to wax.'+chain+
+        '<div id="glossSlot"></div>';
+      stage.innerHTML=vigShell(
+        pnl('THE STORY','\u2026','shut','opened')+
+        pnl('HOW IT WORKS',body)+
+        pnl('WHEN IT DOESN\u2019T WORK','','shut','\u2014')+
+        heldPanel()
+      );
+      stage.querySelectorAll('.term').forEach(function(el){
+        el.onclick=function(){
+          document.getElementById('glossSlot').innerHTML=
+            '<div class="gloss"><b>'+el.dataset.t+'</b> \u2014 '+TERMS[el.dataset.t]+'</div>';
+        };
+      });
+      say('Tap any underlined word and I\u2019ll define it, as many times as you want. The five links underneath are the chain \u2014 each one causes the next.');
+      btn('Just summarize it for me',function(){
+        say('That one I won\u2019t do. Any word in there, as often as you like \u2014 but if I put the mechanism in my sentence, you\u2019ll be carrying my sentence around instead of yours, and the next thing I ask is for yours.');
+        acts.innerHTML='';
+        btn('ok \u2014 when doesn\u2019t it work?',function(){ go(5); });
+      },true);
+      btn('When doesn\u2019t it work?',function(){ go(5); });
+      note('STEP 5 \u00b7 WORDS YES, IDEAS NO',
+        '<p>The gloss rail made concrete: every technical term in the record carries a student-facing definition, and the review gate is that the undefined-term count is zero. Tapping words is unlimited and free.</p>'+
+        '<p>Try <b>Just summarize it for me</b> \u2014 the refusal is the demo. It names what it will do instead and why, which is what separates this from a locked feature.</p>'+
+        '<p class="q">Principled, or withholding? Ask the students, not the adults.</p>');
+    },
+    // 5 — limits
+    function(){
+      ribbonAt(5); stageLabel.textContent='vignette \u00b7 the limits';
+      stage.innerHTML=vigShell(
+        pnl('THE STORY','\u2026','shut','opened')+
+        pnl('HOW IT WORKS','\u2026','shut','opened')+
+        pnl('WHEN IT DOESN\u2019T WORK',
+          '<div class="breaks"><b>Dew beats it.</b> If water forms <i>out of the air</i> directly on the leaf, it condenses down inside the gaps instead of landing on top of the bumps. The trapped air layer never forms and the drop sticks. A lotus leaf on a foggy morning is wet.</div>'+
+          '<div class="breaks"><b>Scratches beat it.</b> The wax layer is delicate. Rub it and the effect is gone where you rubbed. The plant regrows its wax. A painted wall doesn\u2019t.</div>'+
+          '<p style="margin:0;">This one is <b>settled</b> \u2014 first described in 1997 and confirmed many times since. Settled does not mean it always works. It means we know what it does and we know where it stops.</p>')+
+        heldPanel()
+      );
+      say('This is the panel I\u2019d read twice if you\u2019re about to build something. Everybody remembers the trick. Almost nobody remembers where it quits.');
+      btn('What about the last panel?',function(){ go(6); });
+      note('STEP 6 \u00b7 LIMITS AS A REQUIRED FIELD',
+        '<p>Every record carries an evidence status and a limits field. The woodpecker record earns its keep through the status (<i>overturned</i>). This one is settled, so the limits panel does the work \u2014 and it is the panel a designer actually gets bitten by.</p>'+
+        '<p>The self-cleaning paint industry ran straight into both of these. Naming that in Level 2 is what stops Level 4 from being a poster of an idea that cannot survive weather.</p>'+
+        '<p class="q">Should the Level 4 design critique be able to reach back and cite a limits panel the student read here? That would make the arc genuinely cumulative rather than sequential.</p>');
+    },
+    // 6 — held
+    function(){
+      ribbonAt(6); stageLabel.textContent='vignette \u00b7 the held panel';
+      stage.innerHTML=vigShell(
+        pnl('THE STORY','\u2026','shut','opened')+
+        pnl('HOW IT WORKS','\u2026','shut','opened')+
+        pnl('WHEN IT DOESN\u2019T WORK','\u2026','shut','opened')+
+        heldPanel()
+      );
+      var p=stage.querySelector('.pnl.hold'); var tries=0;
+      p.style.cursor='pointer';
+      p.onclick=function(){
+        tries++;
+        say(tries===1
+          ? 'Still shut. I\u2019m not being coy \u2014 there are real products in there, and they\u2019re good, and that is exactly the problem. Read them now and you\u2019ll design one of those.'
+          : 'Same answer. Level 3, next to whatever you come up with. Yours goes first.');
+      };
+      say('One panel left and I\u2019m holding it. Tap it if you like \u2014 it won\u2019t open, but it\u2019ll tell you why.');
+      btn('Ok \u2014 my turn then',function(){ go(7); });
+      note('STEP 7 \u00b7 HOLDING \u00b7 the signature state',
+        '<p>The lotus is the sharpest test of this rail, because its applications are genuinely delightful \u2014 self-cleaning paint, the ketchup bottle that empties. The current Level 2 draft gives both away, with an animation, before the student has picked anything.</p>'+
+        '<p>A black box hides its reasoning. An AI that merely refuses hides its reasoning <i>and</i> refuses. This shows the panel exists, gives the reason, and commits to when it opens.</p>'+
+        '<p>It is tappable and stays shut on purpose. A locked thing that answers you honestly reads differently from a greyed-out control \u2014 and it is the exact opposite gesture to the greyed-out NO button in the Level 1 draft.</p>'+
+        '<p class="q">Full team: does a held panel ever open early \u2014 teacher override, stuck student, on request? Currently no. Nobody has actually agreed to that.</p>');
+    },
+    // 7 — student explains
+    function(){
+      ribbonAt(7); stageLabel.textContent='your explanation';
+      stage.innerHTML='<div class="vig"><div class="vh"><h3>How does it work? In your words.</h3>'+
+        '<div class="fnline">this goes in your journal \u00b7 I can react to it, I can\u2019t write it</div></div>'+
+        '<div class="pnl"><div class="pc" style="padding-top:11px;" id="expSlot">'+
+        '<p style="color:#9AA1A6;font-family:var(--mono);font-size:12px;margin:0;">waiting for you\u2026</p></div></div></div>';
+      say('Tell me how the leaf stays clean, the way you\u2019d tell a friend who wasn\u2019t there. Doesn\u2019t have to be neat.');
+      input('type your explanation', function(v){
+        var low=v.toLowerCase();
+        var lit=CHAIN.map(function(c){ return c.k.some(function(k){return low.indexOf(k)>-1;}); });
+        var n=lit.filter(Boolean).length;
+        document.getElementById('expSlot').innerHTML=
+          '<p style="margin:0 0 11px;font-size:14px;">\u201c'+v+'\u201d</p><ol class="chain" style="list-style:none;">'+
+          CHAIN.map(function(c,i){
+            return '<li class="'+(lit[i]?'lit':'unlit')+'"><span class="mark">'+
+              (lit[i]?'you said this':'not yet')+'</span>'+c.t+'</li>';
+          }).join('')+'</ol>';
+        say(n===5
+          ? 'All five links. That\u2019s the whole thing \u2014 go put it in your journal before you lose it.'
+          : 'You\u2019ve got '+n+' of five. The blue ones aren\u2019t mistakes, they\u2019re just not in there yet. Pick one and have another go, or reread that bit.');
+        acts.innerHTML='';
+        btn('try again',function(){ go(7); },true);
+        btn('start over',function(){ location.reload(); },true);
+      },'Send it');
+      note('STEP 8 \u00b7 A GAP MAP, NOT A VERDICT',
+        '<p>No score, no pass. The causal chain with the links the student covered and the ones they didn\u2019t, and the missing ones read <i>not yet</i> rather than wrong. The student can see where to go back to.</p>'+
+        '<p><b>Honest about this prototype:</b> the matching is crude keyword spotting so the demo runs. Whether a real system can map a twelve-year-old\u2019s sentence onto a five-link chain is Chu\u2019s question \u2014 and if it can\u2019t do it reliably, the gap map becomes a self-check the student ticks themselves, which may be the better design anyway.</p>'+
+        '<p class="q">Help, or being marked? Worth testing against a plain \u201ctell me more about the air part.\u201d</p>');
+    }
+  ];
+
+  function go(n){ acts.innerHTML=''; steps[n](); }
+  document.getElementById('notesBtn').addEventListener('click',function(){
+    var on=document.body.classList.toggle('shownotes');
+    this.setAttribute('aria-pressed',String(on));
+  });
+  document.getElementById('resetBtn').addEventListener('click',function(){ location.reload(); });
+  go(0);
+})();
+</script>
+</body>
+</html>

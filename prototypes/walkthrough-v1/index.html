@@ -1,0 +1,1200 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>A Week with Maya</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=Kalam:wght@400;700&display=swap">
+<style>
+/* Layout: a fixed 1600×900 stage scaled to the window. Each stop = a week strip + one app window;
+   the last step shrinks the window to the left and brings the Zoom-chat prompt in on the right.
+   Single committed look (dark surround, light stage) so it reads the same on every screen share. */
+:root{
+  color-scheme: dark;
+  --surround:#0E1417;
+  --stage:#F2F5F5;
+  --ink:#14212A;
+  --text:#1D2A31;
+  --muted:#586870;
+  --line:#CAD5D8;
+  --line-soft:#DDE6E8;
+  --white:#FFFFFF;
+  --teal:#0C5A66;
+  --teal-2:#12808F;
+  --teal-wash:#E1EFF1;
+  --teal-ghost:#F2F8F8;
+  --amber:#9A6116;
+  --amber-2:#D08E2C;
+  --amber-wash:#F8ECD6;
+  --paper:#FCFBF6;
+  --paper-edge:#E4E0D2;
+  --graphite:#3B4247;
+  --pencil-green:#3F7A32;
+  --pencil-blue:#2F6DA6;
+  --leaf-wash:#E7F0DF;
+  --neutral-1:#E9EDEF;
+  --neutral-2:#D9E0E3;
+  --chrome:#172127;
+  --chrome-line:#2B3940;
+  --chrome-text:#C9D5DA;
+  --chrome-dim:#8FA2AA;
+  --display:"Bricolage Grotesque","Atkinson Hyperlegible",system-ui,sans-serif;
+  --body:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --hand:"Kalam","Segoe Print","Comic Sans MS",cursive;
+}
+html,body{height:100%}
+body{margin:0;background:var(--surround);color:var(--text);font-family:var(--body);overflow:hidden}
+#viewport{position:fixed;inset:0;overflow:hidden}
+#stage{position:absolute;top:0;left:0;width:1600px;height:900px;transform-origin:0 0;background:var(--stage);border-radius:8px;overflow:hidden;box-shadow:0 30px 80px -20px rgba(0,0,0,.6)}
+.slide{position:absolute;inset:0;opacity:0;visibility:hidden;transition:opacity .35s ease,visibility 0s linear .35s}
+.slide.active{opacity:1;visibility:visible;transition:opacity .35s ease}
+[data-s],[data-until]{transition:opacity .45s ease,transform .45s ease}
+.pending{opacity:0!important;visibility:hidden;transform:translateY(10px)}
+.collapse.pending{display:none}
+
+/* shared type */
+.eyebrow{margin:0;font:600 15px/1.2 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--teal-2)}
+h1,h2,h3,h4{text-wrap:balance}
+
+/* ---------- stop header + week strip ---------- */
+.stophead{position:absolute;left:40px;right:40px;top:24px;height:104px;display:flex;align-items:flex-end;justify-content:space-between;gap:32px}
+.stoptitle{min-width:0}
+.stoptitle .eyebrow{margin-bottom:6px}
+.stoptitle h2{margin:0;font:800 46px/1 var(--display);letter-spacing:-.015em;color:var(--ink)}
+.stoptitle .sub{margin:9px 0 0;font-size:19px;color:var(--muted)}
+.headnote{margin:0 0 4px;font-size:21px;color:var(--muted);max-width:520px;text-align:right}
+.week{display:flex;gap:6px;list-style:none;margin:0 0 2px;padding:0;flex:none}
+.week li{width:124px;padding:8px 12px 9px;border-radius:10px;border:1.5px solid var(--line);background:var(--white);font:600 12px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.week li b{display:block;margin-top:5px;font:700 16px/1.15 var(--body);letter-spacing:0;text-transform:none;color:var(--text)}
+.week li.done{background:var(--teal-ghost);border-color:#BFD9DC}
+.week li.now{background:var(--teal);border-color:var(--teal);color:#BFE0E5}
+.week li.now b{color:#fff}
+.week li.later{border-style:dashed;background:transparent;opacity:.7}
+
+/* ---------- main area + reaction card ---------- */
+.main{position:absolute;left:40px;top:140px;width:1520px;height:730px;transform-origin:0 0;transition:transform .6s cubic-bezier(.2,.7,.2,1)}
+.slide.react .main{transform:translate(0,138px) scale(.58)}
+.react-card{position:absolute;left:958px;top:172px;width:602px;min-height:560px;box-sizing:border-box;background:var(--ink);color:#E4EEF1;border-radius:22px;padding:40px 44px 34px;display:flex;flex-direction:column;gap:18px;box-shadow:0 30px 60px -25px rgba(10,30,40,.55)}
+.react-card.pending{transform:translateX(40px)}
+.rc-eye{margin:0;display:flex;align-items:center;gap:10px;font:600 14px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:#7FD0DA}
+.rc-eye svg{width:22px;height:22px;color:#7FD0DA}
+.rc-lead{margin:0;font-size:22px;color:#B9CBD1}
+.rc-q{margin:6px 0 0;font:700 44px/1.12 var(--display);letter-spacing:-.01em;color:#fff}
+.rc-list{margin:4px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:22px;counter-reset:q}
+.rc-list li{display:grid;grid-template-columns:44px 1fr;gap:14px;font:700 33px/1.15 var(--display);color:#fff;counter-increment:q}
+.rc-list li::before{content:counter(q);display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:#24343D;color:#7FD0DA;font:600 20px var(--mono)}
+.rc-split{display:flex;flex-direction:column;gap:22px;margin-top:4px}
+.rc-split div{border-left:4px solid var(--amber-2);padding-left:18px}
+.rc-split span{display:block;font:600 13px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:#E8B66A;margin-bottom:6px}
+.rc-split h3{margin:0;font:700 32px/1.15 var(--display);color:#fff}
+.react-timer{margin-top:auto;height:6px;background:#2A3942;border-radius:3px;overflow:hidden}
+.react-timer span{display:block;height:100%;background:var(--amber-2);transform-origin:left center}
+.react-timer span.run{animation:drain 60s linear forwards}
+@keyframes drain{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+.rc-foot{margin:-6px 0 0;font:500 13px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:#7F959D}
+
+/* ---------- welcome ---------- */
+.welcome{position:absolute;inset:0}
+.w-text{position:absolute;left:84px;top:118px;width:820px}
+.w-text h1{margin:18px 0 0;font:800 116px/.92 var(--display);letter-spacing:-.035em;color:var(--ink)}
+.w-text h1 em{font-style:normal;color:var(--teal-2)}
+.w-lede{margin:26px 0 0;font-size:29px;line-height:1.35;color:var(--muted);max-width:640px}
+.w-art{position:absolute;right:48px;top:40px;width:640px;height:auto;opacity:.95}
+.w-cards{position:absolute;left:84px;right:84px;bottom:64px;display:grid;grid-template-columns:repeat(3,1fr);gap:22px;list-style:none;margin:0;padding:0}
+.w-cards li{background:var(--white);border:1.5px solid var(--line-soft);border-radius:16px;padding:22px 26px}
+.w-cards h3{margin:0 0 8px;font:700 24px/1.15 var(--display);color:var(--ink)}
+.w-cards p{margin:0;font-size:19px;line-height:1.4;color:var(--muted)}
+
+/* ---------- how it works ---------- */
+.how{position:absolute;left:84px;right:84px;top:150px}
+.big{margin:14px 0 0;font:800 64px/1 var(--display);letter-spacing:-.025em;color:var(--ink)}
+.rhythm{list-style:none;margin:56px 0 0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:26px}
+.rhythm li{background:var(--white);border:1.5px solid var(--line-soft);border-radius:18px;padding:30px 32px 32px;display:flex;flex-direction:column;gap:10px}
+.rhythm .n{display:grid;place-items:center;width:52px;height:52px;border-radius:50%;background:var(--teal);color:#fff;font:600 24px var(--mono)}
+.rhythm h3{margin:10px 0 0;font:800 40px/1 var(--display);color:var(--ink)}
+.rhythm .t{margin:0;font:600 14px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--teal-2)}
+.rhythm p{margin:0;font-size:21px;line-height:1.42;color:var(--text)}
+.rhythm li:nth-child(2){border-color:var(--amber-2);box-shadow:0 0 0 3px var(--amber-wash)}
+.rhythm li:nth-child(2) .n{background:var(--amber-2)}
+.how-foot{margin:44px 0 0;font-size:23px;color:var(--muted)}
+
+/* ---------- two tutors ---------- */
+.tutors{display:flex;flex-direction:column;gap:16px}
+.shared{align-self:center;width:860px;background:var(--neutral-2);border-radius:16px;padding:14px 20px}
+.shared .who,.lane .who{display:block;font:600 12px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.shared p{margin:0;font-size:21px;line-height:1.4}
+.lanes{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.lane{background:var(--white);border:1.5px solid var(--line);border-radius:16px;display:flex;flex-direction:column;min-width:0;overflow:hidden}
+.lane-h{display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1.5px solid var(--line-soft);background:var(--neutral-1);font:700 21px var(--display);color:var(--ink)}
+.tav{display:grid;place-items:center;width:34px;height:34px;border-radius:9px;background:#8C9AA1;color:#fff;font:600 17px var(--mono)}
+.lane-b{padding:16px 18px;display:flex;flex-direction:column;gap:11px}
+.tb{border-radius:14px;padding:11px 15px;font-size:18.5px;line-height:1.4;max-width:92%}
+.tb p{margin:0}.tb p+p,.tb ol{margin-top:6px}
+.tb ol{margin-bottom:0;padding-left:26px}
+.tb.tutor{background:var(--neutral-1);border-top-left-radius:4px}
+.tb.student{align-self:flex-end;background:#C9D3D7;border-top-right-radius:4px}
+
+/* ---------- Maya's week overview ---------- */
+.wk{position:absolute;left:84px;right:84px;top:80px}
+.wk .lede{margin:18px 0 0;font-size:25px;line-height:1.4;color:var(--muted);max-width:980px}
+.days{list-style:none;margin:60px 0 0;padding:0;display:grid;grid-template-columns:repeat(5,1fr);gap:18px}
+.day{position:relative;background:var(--white);border:1.5px solid var(--line-soft);border-radius:18px;padding:22px 22px 20px;display:flex;flex-direction:column;gap:10px;min-height:370px;box-sizing:border-box}
+.day .d{font:600 14px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.day h3{margin:0;font:800 30px/1.05 var(--display);color:var(--ink)}
+.day p{margin:0;font-size:19px;line-height:1.4;color:var(--text)}
+.chip{margin-top:auto;align-self:flex-start;display:inline-flex;align-items:center;gap:7px;font:600 12.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;padding:6px 10px;border-radius:8px}
+.chip.hands{background:var(--leaf-wash);color:var(--pencil-green)}
+.chip.ai{background:var(--teal-wash);color:var(--teal)}
+.chip svg{width:16px;height:16px}
+.stopflag{position:absolute;top:-13px;right:16px;background:var(--ink);color:#fff;font:600 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;padding:5px 10px;border-radius:99px}
+.day.off{background:transparent;border-style:dashed}
+.wk-foot{margin:34px 0 0;font-size:23px;color:var(--muted)}
+.wk-foot b{color:var(--ink)}
+
+/* ---------- field journal ---------- */
+.journal{display:grid;grid-template-columns:1fr 1fr;height:100%;background:var(--paper);border-radius:10px;box-shadow:0 26px 50px -24px rgba(50,45,20,.45),0 0 0 1.5px var(--paper-edge);position:relative;overflow:hidden}
+.journal::after{content:"";position:absolute;top:0;bottom:0;left:50%;width:70px;margin-left:-35px;background:linear-gradient(90deg,transparent,rgba(70,62,30,.09) 42%,rgba(70,62,30,.17) 50%,rgba(70,62,30,.09) 58%,transparent);pointer-events:none}
+.jpage{position:relative;padding:26px 44px;background-image:radial-gradient(circle,rgba(90,110,100,.2) 1.3px,transparent 1.7px);background-size:28px 28px;min-width:0}
+.jhead{display:flex;justify-content:space-between;align-items:baseline;font:600 13px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.hand{font-family:var(--hand)}
+.jhead .hand{font-size:27px;font-weight:700;letter-spacing:0;text-transform:none;color:var(--graphite)}
+.sketch{display:block;width:100%;height:auto;margin-top:4px}
+.jmeta{display:flex;flex-wrap:wrap;gap:4px 26px;padding-bottom:12px;border-bottom:1.5px dashed rgba(59,66,71,.28)}
+.jmeta span{font:600 12.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.jmeta .hand{margin-left:6px;font-size:25px;font-weight:400;letter-spacing:0;text-transform:none;color:var(--graphite)}
+.prompt{padding-top:14px}
+.plabel{font:600 14px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--teal)}
+.lines{margin-top:2px;min-height:102px;background-image:linear-gradient(transparent 32px,rgba(47,109,166,.24) 32px,rgba(47,109,166,.24) 33.5px,transparent 33.5px);background-size:100% 34px}
+.lines p{margin:0;font:400 25px/34px var(--hand);color:var(--graphite)}
+
+/* ---------- app windows ---------- */
+.device{height:100%;box-sizing:border-box;background:var(--white);border:1.5px solid var(--line);border-radius:18px;box-shadow:0 22px 50px -24px rgba(12,40,50,.4);display:flex;flex-direction:column;overflow:hidden}
+.dev-bar{flex:none;display:flex;align-items:center;gap:26px;padding:12px 22px;border-bottom:1.5px solid var(--line-soft);background:var(--teal-ghost)}
+.app-id{display:flex;flex-direction:column;gap:4px;flex:none}
+.app-id b{font:700 20px/1.1 var(--display);color:var(--ink)}
+.app-id span{font:500 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.user{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px;color:var(--text);flex:none}
+.user i{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:var(--teal);color:#fff;font:700 16px var(--body);font-style:normal}
+.user i.tch{background:#5F4B8B}
+.mapwrap{flex:1;min-width:0;display:flex;align-items:center;gap:16px}
+.maplabel{flex:none;font:600 11.5px/1.2 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);width:64px}
+.chapters{flex:1;min-width:0;display:flex;list-style:none;margin:0;padding:0}
+.chapters li{flex:1;position:relative;padding-top:28px;text-align:center;font-size:14.5px;color:var(--muted);white-space:nowrap}
+.chapters li::before{content:"";position:absolute;top:5px;left:50%;width:16px;height:16px;margin-left:-8px;box-sizing:border-box;border-radius:50%;background:var(--white);border:2px solid var(--line);z-index:1;transition:all .4s}
+.chapters li::after{content:"";position:absolute;top:12px;left:-50%;width:100%;height:2px;background:var(--line);transition:background .4s}
+.chapters li:first-child::after{display:none}
+.chapters li.done::before{background:var(--teal-2);border-color:var(--teal-2)}
+.chapters li.done::after,.chapters li.now::after{background:var(--teal-2)}
+.chapters li.now{color:var(--ink);font-weight:700}
+.chapters li.now::before{top:1px;width:24px;height:24px;margin-left:-12px;background:var(--amber-wash);border:4px solid var(--amber-2)}
+.dev-body{flex:1;min-height:0;display:grid;grid-template-rows:minmax(0,1fr);position:relative}
+
+/* chat */
+.chat{position:relative;padding:22px 28px;display:flex;flex-direction:column;gap:14px;overflow:hidden;min-width:0;-webkit-mask-image:linear-gradient(transparent 0,#000 34px);mask-image:linear-gradient(transparent 0,#000 34px)}
+.turn{display:flex;gap:12px;align-items:flex-start;max-width:88%}
+.turn.me{align-self:flex-end;flex-direction:row-reverse}
+.bw{display:flex;flex-direction:column;gap:5px;min-width:0}
+.turn.me .bw{align-items:flex-end}
+.who{font:600 12px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.av{width:42px;height:42px;flex:none}
+i.av{display:grid;place-items:center;border-radius:50%;background:var(--teal);color:#fff;font:700 17px var(--body);font-style:normal}
+.bubble{padding:11px 16px;border-radius:16px;font-size:19.5px;line-height:1.42}
+.bubble p{margin:0}.bubble p+p,.bubble p+.cansee,.cansee+p{margin-top:9px}
+.bot .bubble{background:var(--teal-ghost);border:1.5px solid #C8DFE2;border-top-left-radius:4px;color:var(--text)}
+.me .bubble{background:var(--teal);color:#fff;border-top-right-radius:4px}
+.cansee{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cansee div{background:var(--white);border:1.5px solid var(--line-soft);border-radius:10px;padding:9px 12px;font-size:17.5px;line-height:1.35}
+.cansee b{display:flex;align-items:center;gap:6px;margin-bottom:4px;font:600 12.5px var(--mono);letter-spacing:.08em;text-transform:uppercase}
+.cansee svg{width:18px;height:18px}
+.cansee .yes b{color:var(--teal)}.cansee .no b{color:var(--amber)}
+.attach{display:flex;gap:10px;justify-content:flex-end;margin-bottom:10px}
+.attach figure{margin:0}
+.attach img,.attach svg{display:block;width:168px;height:126px;border-radius:8px;object-fit:cover;background:#2F3B2A}
+.attach svg{width:146px;background:var(--paper)}
+.attach figcaption{margin-top:5px;font:600 11.5px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:#BFE0E5;text-align:center}
+
+/* stop 2: dashboard + x-ray */
+.s2{grid-template-columns:1fr 530px}
+.dash{border-left:1.5px solid var(--line-soft);background:#FAFCFC;padding:20px 24px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.dash-h{display:flex;justify-content:space-between;align-items:center}
+.dash-h b{font:700 21px var(--display);color:var(--ink)}
+.power{font:600 12px var(--mono);letter-spacing:.12em;text-transform:uppercase;padding:5px 11px;border-radius:99px;background:var(--neutral-1);color:var(--muted);transition:all .4s}
+.power .p-on{display:none}
+.dash.lit .power{background:var(--teal);color:#fff}
+.dash.lit .power .p-on{display:inline}.dash.lit .power .p-off{display:none}
+.gauge{border:1.5px solid var(--line-soft);border-radius:12px;padding:13px 16px 14px;background:var(--white);transition:opacity .6s,filter .6s}
+.dash:not(.lit) .gauge,.dash:not(.lit) .xbtn{opacity:.32;filter:grayscale(1)}
+.gauge h4{margin:0 0 10px;font:600 13px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--teal)}
+.sure{display:grid;grid-template-columns:1fr auto;gap:4px 14px;align-items:center}
+.sure+.sure{margin-top:12px;padding-top:12px;border-top:1px dashed var(--line-soft)}
+.claim{font-size:17.5px;line-height:1.3}
+.meter{display:flex;gap:4px}
+.meter i{width:24px;height:14px;border-radius:3px;background:var(--neutral-2);transition:background .5s}
+.dash.lit .meter i.f{background:var(--teal-2)}
+.dash.lit .meter.low i.f{background:var(--amber-2)}
+.verdict{grid-column:1/-1;font-size:15.5px;color:var(--muted)}
+.verdict b{color:var(--ink)}
+.using{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px}
+.using li{display:flex;gap:10px;align-items:flex-start;font-size:17px;line-height:1.3}
+.using svg{width:20px;height:20px;flex:none;margin-top:1px}
+.using .y svg{color:var(--teal-2)}.using .n svg{color:var(--amber-2)}
+.using .n{color:var(--muted)}
+.xbtn{display:flex;align-items:center;gap:14px;border:2px dashed var(--teal-2);border-radius:12px;padding:11px 16px;background:var(--white);color:var(--teal);transition:all .4s}
+.xbtn svg{width:40px;height:26px;flex:none}
+.xbtn b{display:block;font:700 18px/1.15 var(--display)}
+.xbtn span{font-size:14.5px;color:var(--muted)}
+.xbtn.lit{background:var(--teal);border-style:solid;color:#fff}
+.xbtn.lit span{color:#BFE0E5}
+.xray{position:absolute;top:0;right:0;bottom:0;width:830px;box-sizing:border-box;background-color:#EDF6F7;background-image:linear-gradient(rgba(18,128,143,.09) 1px,transparent 1px),linear-gradient(90deg,rgba(18,128,143,.09) 1px,transparent 1px);background-size:24px 24px;border-left:2px solid var(--teal-2);box-shadow:-30px 0 40px -24px rgba(12,60,70,.45);padding:20px 28px;display:grid;grid-template-columns:272px 1fr;grid-template-rows:auto 1fr;gap:14px 30px}
+.xray.pending{transform:translateX(60px)}
+.xray-h{grid-column:1/-1;display:flex;align-items:center;gap:14px;color:var(--teal)}
+.xray-h svg{width:44px;height:28px}
+.xray-h b{font:800 26px/1 var(--display);color:var(--ink)}
+.xray-h span{font-size:18px;color:var(--muted)}
+.xcol{display:flex;flex-direction:column;gap:8px;min-width:0}
+.xfig{position:relative;width:272px;height:204px;border-radius:8px;overflow:hidden;background:#2F3B2A}
+.xfig img{display:block;width:100%;height:100%}
+.xbox{position:absolute;border:2.5px solid #FFD27A;box-shadow:0 0 0 2px rgba(0,0,0,.35);border-radius:2px}
+.xcap{margin:0;font-size:14.5px;line-height:1.35;color:var(--muted)}
+.xcap b{color:var(--ink);font-family:var(--mono);font-weight:600;font-size:13.5px}
+#zoom{display:block;width:272px;height:272px;border-radius:8px;image-rendering:pixelated;margin-top:4px}
+.xsteps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px;counter-reset:x}
+.xsteps li{display:grid;grid-template-columns:38px 1fr;gap:14px;counter-increment:x;background:rgba(255,255,255,.82);border:1.5px solid #CBE1E4;border-radius:12px;padding:12px 16px}
+.xsteps li::before{content:counter(x);display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--teal);color:#fff;font:600 16px var(--mono)}
+.xsteps h5{margin:3px 0 4px;font:700 19px/1.2 var(--display);color:var(--ink)}
+.xsteps p{margin:0;font-size:16.5px;line-height:1.38;color:var(--text)}
+.xsteps li.limit{border-color:var(--amber-2);background:#FFF9EF}
+.xsteps li.limit::before{background:var(--amber-2)}
+
+/* stop 3: idea board */
+.s3{grid-template-columns:1fr 560px}
+.board{border-left:1.5px solid var(--line-soft);background:#FAFBF9;padding:18px 22px;display:flex;flex-direction:column;gap:9px;min-width:0}
+.board-h{display:flex;flex-direction:column;gap:3px;margin-bottom:4px}
+.board-h b{font:700 21px var(--display);color:var(--ink)}
+.board-h span{font-size:15.5px;color:var(--muted)}
+.idea{display:grid;grid-template-columns:146px 1fr;gap:12px;align-items:start;background:var(--white);border:1.5px solid var(--line-soft);border-radius:10px;padding:9px 12px;font-size:17px;line-height:1.33}
+.tag{display:inline-flex;align-items:center;gap:6px;justify-self:start;font:600 11.5px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;padding:5px 8px;border-radius:6px;white-space:nowrap}
+.tag svg{width:14px;height:14px;flex:none}
+.tag.tg-journal{background:var(--leaf-wash);color:var(--pencil-green)}
+.tag.tg-chat{background:var(--teal-wash);color:var(--teal)}
+.tag.tg-robot{background:var(--amber-wash);color:var(--amber)}
+.idea.from-robot{border-style:dashed;border-color:var(--amber-2)}
+.tally{margin-top:auto;padding-top:10px;border-top:1.5px solid var(--line-soft)}
+.tally-h{display:flex;justify-content:space-between;font:600 12.5px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+.tally-bar{display:flex;height:14px;border-radius:7px;overflow:hidden;gap:2px;background:var(--neutral-1)}
+.tally-bar span{transition:flex-grow .5s}
+.tb-maya{background:var(--teal-2)}.tb-robot{background:var(--amber-2)}
+
+/* stop 4: teacher view */
+.dist{flex:none;display:flex;align-items:center;gap:22px;padding:12px 24px 14px;border-bottom:1.5px solid var(--line-soft)}
+.dist-l{flex:none;width:96px;font:600 11.5px/1.25 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.dist-cols{flex:1;display:grid;grid-template-columns:repeat(6,1fr);gap:14px}
+.dcol{display:flex;flex-direction:column;gap:4px;min-width:0}
+.dcol .nm{font-size:14px;color:var(--muted);white-space:nowrap}
+.dcol .ct{font:600 22px/1 var(--mono);color:var(--ink);font-variant-numeric:tabular-nums}
+.dcol .bar{height:6px;border-radius:3px;background:var(--neutral-1);overflow:hidden}
+.dcol .bar i{display:block;height:100%;background:var(--teal-2);border-radius:3px}
+.s4{grid-template-columns:1fr 500px}
+.tiles{padding:18px 20px;display:grid;grid-template-columns:repeat(6,1fr);grid-template-rows:repeat(4,1fr);gap:10px;min-width:0;position:relative}
+.tile{position:relative;border:1.5px solid var(--line-soft);border-radius:11px;padding:10px 12px 11px;background:var(--white);display:flex;flex-direction:column;gap:3px;min-width:0;transition:box-shadow .4s,border-color .4s}
+.tile b{font-size:17px;color:var(--ink)}
+.tile .ch{font-size:13.5px;color:var(--muted)}
+.dots{display:flex;gap:3px;margin-top:auto}
+.dots i{flex:1;height:5px;border-radius:3px;background:var(--neutral-2)}
+.dots i.d{background:var(--teal-2)}.dots i.n{background:var(--ink)}
+.badge{position:absolute;top:-11px;right:8px;background:var(--amber);color:#fff;font:600 11px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;padding:5px 8px;border-radius:99px;opacity:0;transform:translateY(4px);transition:all .4s}
+.tile.lit{border-color:var(--amber-2);box-shadow:0 0 0 4px rgba(208,142,44,.28);background:#FFFBF3}
+.tile.lit .badge{opacity:1;transform:none}
+.alerts{border-left:1.5px solid var(--line-soft);background:#FAFBFB;padding:18px 22px;display:flex;flex-direction:column;gap:12px;min-width:0;overflow:hidden}
+.alerts-h{font:700 21px var(--display);color:var(--ink)}
+.calm{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;flex:1;text-align:center;color:var(--muted);font-size:18px;border:1.5px dashed var(--line);border-radius:12px;padding:20px}
+.calm svg{width:34px;height:34px;color:var(--teal-2)}
+.alert{border:2px solid var(--amber-2);border-radius:12px;background:var(--white);overflow:hidden}
+.alert-h{display:flex;align-items:center;gap:10px;padding:11px 16px;background:var(--amber-wash)}
+.alert-h .dot{width:12px;height:12px;border-radius:50%;background:var(--amber-2);flex:none}
+.alert-h b{font:700 19px var(--display);color:var(--ink)}
+.alert-h time{margin-left:auto;font:500 12.5px var(--mono);color:var(--muted)}
+.alert-b{padding:12px 16px 14px;display:flex;flex-direction:column;gap:10px;font-size:16.5px;line-height:1.38}
+.alert-b p{margin:0}
+.kv span{display:block;font:600 11.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+.ways{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px}
+.ways li{display:grid;grid-template-columns:24px 1fr;gap:8px;background:var(--teal-ghost);border-radius:8px;padding:7px 10px}
+.ways li::before{content:"→";color:var(--teal-2);font-weight:700}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+.btn{font:700 15px var(--body);padding:8px 13px;border-radius:8px;border:1.5px solid var(--line);background:var(--white);color:var(--text)}
+.btn.primary{background:var(--teal);border-color:var(--teal);color:#fff}
+.peek{position:absolute;left:356px;top:212px;width:470px;box-sizing:border-box;background:var(--ink);color:#E4EEF1;border-radius:14px;padding:16px 18px 18px;box-shadow:0 24px 50px -20px rgba(10,30,40,.6);z-index:3}
+.peek::after{content:"";position:absolute;right:-9px;top:84px;width:18px;height:18px;background:var(--ink);transform:rotate(45deg)}
+.peek-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+.peek-h b{font:700 18px var(--display);color:#fff}
+.peek-h span{font:500 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:#8FA9B1}
+.peek ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px}
+.peek li{display:flex;justify-content:space-between;gap:12px;align-items:baseline;background:#223540;border-radius:9px;padding:8px 12px;font-size:17px}
+.peek time{font:500 12.5px var(--mono);color:#8FA9B1;flex:none}
+
+/* ---------- break / wrap / survey ---------- */
+.center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:18px;padding:0 120px}
+.count{font:600 220px/1 var(--mono);letter-spacing:-.04em;color:var(--ink);font-variant-numeric:tabular-nums}
+.count.done{color:var(--amber)}
+.center .lead{margin:0;font-size:30px;color:var(--muted)}
+.center .next{margin:24px 0 0;font-size:22px;color:var(--muted)}
+.center .next b{color:var(--ink)}
+.center .q{margin:10px 0 0;font:800 72px/1.04 var(--display);letter-spacing:-.025em;color:var(--ink);max-width:1200px}
+.restart{font:600 14px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--teal);background:transparent;border:1.5px solid var(--line);border-radius:99px;padding:8px 16px;cursor:pointer}
+.restart:focus-visible{outline:3px solid var(--teal-2);outline-offset:2px}
+.steps3{display:flex;gap:18px;margin-top:26px}
+.steps3 div{background:var(--white);border:1.5px solid var(--line-soft);border-radius:14px;padding:16px 22px;font-size:20px;color:var(--text);max-width:330px;text-align:left}
+.steps3 span{display:block;font:600 12.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--teal-2);margin-bottom:6px}
+
+/* ---------- presenter controls + notes (outside the stage) ---------- */
+#controls{position:fixed;left:16px;right:16px;margin-inline:auto;width:max-content;bottom:calc(12px + env(safe-area-inset-bottom,0px));display:flex;align-items:center;gap:4px;padding:6px;background:rgba(14,20,23,.94);border:1px solid var(--chrome-line);border-radius:14px;z-index:30;transition:opacity .3s;max-width:calc(100vw - 32px);box-sizing:border-box;flex-wrap:wrap;justify-content:center}
+#controls.idle{opacity:0;pointer-events:none}
+.cb{font:600 14px var(--body);color:var(--chrome-text);background:transparent;border:1px solid transparent;border-radius:9px;padding:8px 12px;cursor:pointer;white-space:nowrap}
+.cb:hover{background:#1E2A30}
+.cb:focus-visible,#jump:focus-visible{outline:2px solid var(--teal-2);outline-offset:1px}
+.cb.on{background:#22343C;color:#fff}
+#pos{font:500 13px var(--mono);color:var(--chrome-dim);padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:360px;min-width:0}
+#jump{font:500 13px var(--body);background:var(--chrome);color:var(--chrome-text);border:1px solid var(--chrome-line);border-radius:8px;padding:7px 8px;max-width:190px}
+.sep{width:1px;height:22px;background:var(--chrome-line);margin:0 4px}
+#notes{position:fixed;top:0;right:0;bottom:0;width:min(440px,100vw);box-sizing:border-box;background:#0A1013;color:#D3DDE1;border-left:1px solid var(--chrome-line);padding:calc(22px + env(safe-area-inset-top,0px)) 24px 100px;overflow-y:auto;z-index:20;font-size:15px;line-height:1.5}
+#notes h2{margin:0;font:700 20px var(--display);color:#fff}
+#notes .meta{margin:6px 0 16px;font:500 12.5px var(--mono);letter-spacing:.06em;color:var(--chrome-dim);text-transform:uppercase}
+#notes h3{margin:18px 0 8px;font:600 12px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:#7FD0DA}
+#notes ol,#notes ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+#notes li.now{color:#fff;font-weight:700}
+#notes li.now::marker{color:#E8B66A}
+#notes .tip{margin:14px 0 0;padding:10px 12px;border-left:3px solid var(--amber-2);background:#141D21;color:#E6D2B0}
+#notes .team{margin-top:22px;padding-top:14px;border-top:1px solid var(--chrome-line);color:var(--chrome-dim);font-size:13.5px}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{transition:none!important;animation:none!important}
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <filter id="pencil" filterUnits="userSpaceOnUse" x="-40" y="-40" width="800" height="700">
+      <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="4" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="3.2" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <pattern id="hatch" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(38)">
+      <line x1="0" y1="0" x2="0" y2="9" stroke="#3F7A32" stroke-width="2.6" stroke-opacity=".30"/>
+    </pattern>
+  </defs>
+  <symbol id="robot" viewBox="0 0 44 44">
+    <rect x="1" y="1" width="42" height="42" rx="12" fill="#0C5A66"/>
+    <line x1="22" y1="5.5" x2="22" y2="11" stroke="#9FD6DD" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="22" cy="5.5" r="2.4" fill="#F2B356"/>
+    <rect x="8.5" y="12" width="27" height="22" rx="6.5" fill="#E1EFF1"/>
+    <circle cx="16.5" cy="21.5" r="3.3" fill="#0C5A66"/>
+    <circle cx="27.5" cy="21.5" r="3.3" fill="#0C5A66"/>
+    <rect x="17" y="28" width="10" height="2.4" rx="1.2" fill="#0C5A66" opacity=".7"/>
+  </symbol>
+  <symbol id="i-check" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9.2" fill="currentColor" opacity=".15"/><path d="M5.6 10.4l3 3 5.8-6.8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-cross" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9.2" fill="currentColor" opacity=".15"/><path d="M6.8 6.8l6.4 6.4M13.2 6.8l-6.4 6.4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+  <symbol id="i-glasses" viewBox="0 0 40 26"><circle cx="10" cy="15" r="7.5" fill="none" stroke="currentColor" stroke-width="2.6"/><circle cx="30" cy="15" r="7.5" fill="none" stroke="currentColor" stroke-width="2.6"/><path d="M17.5 14q2.5-3 5 0M2.6 14L1.5 6M37.4 14l1.1-8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path d="M6.5 12.5l3-3M26.5 12.5l3-3" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity=".6"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M3.5 5h17v11.5H9.5L4.5 20.5V16.5h-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+  <symbol id="i-pencil" viewBox="0 0 20 20"><path d="M3.5 16.5l1.2-4.4 8.6-8.6 3.2 3.2-8.6 8.6z M11.6 5.2l3.2 3.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+  <symbol id="i-calm" viewBox="0 0 34 34"><circle cx="17" cy="17" r="15" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M10.5 17.5l4.5 4.5 8.5-9.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+
+  <!-- Maya's field sketch: the same drawing appears on the welcome slide, in her journal, and as her upload -->
+  <symbol id="sketch-art" viewBox="0 0 700 600">
+    <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <g stroke="#3B4247" stroke-width="2" filter="url(#pencil)">
+        <path d="M170 42 L548 42"/><path d="M170 32 L170 52"/><path d="M548 32 L548 52"/><path d="M359 36 L359 48"/>
+      </g>
+      <g transform="translate(110 40) scale(.82)">
+        <path d="M300 120 C240 60 110 50 80 150 C55 245 170 390 310 500 C450 390 560 250 530 150 C505 55 370 60 300 120 Z" fill="url(#hatch)" stroke="none"/>
+        <g stroke="#3B4247" filter="url(#pencil)">
+          <path d="M300 120 C240 60 110 50 80 150 C55 245 170 390 310 500 C450 390 560 250 530 150 C505 55 370 60 300 120 Z" stroke-width="3.4"/>
+          <path d="M300 120 C298 90 293 55 286 22" stroke-width="3.2"/>
+          <path d="M300 122 C305 250 308 380 310 495" stroke-width="2.3"/>
+          <g stroke-width="1.7" opacity=".8">
+            <path d="M302 170 Q230 150 150 128"/><path d="M302 170 Q380 150 462 128"/>
+            <path d="M304 232 Q210 225 110 225"/><path d="M304 232 Q400 222 500 222"/>
+            <path d="M306 300 Q240 320 175 342"/><path d="M306 300 Q380 318 452 340"/>
+            <path d="M308 372 Q275 398 245 428"/><path d="M308 372 Q345 398 378 425"/>
+          </g>
+        </g>
+        <g id="sk-drops" stroke="#2F6DA6" stroke-width="2.7" filter="url(#pencil)"></g>
+      </g>
+      <g stroke="#2F6DA6" stroke-width="2.6" filter="url(#pencil)">
+        <circle cx="371" cy="503" r="9" fill="rgba(47,109,166,.12)"/>
+        <path d="M361 462 L364 480 M380 460 L381 476"/>
+      </g>
+      <g stroke="#3B4247" stroke-width="2" filter="url(#pencil)">
+        <path d="M170 168 Q212 172 250 188"/><path d="M239 180 L251 189 L238 194"/>
+        <path d="M16 312 Q100 318 206 309"/>
+        <path d="M216 296 Q255 272 290 258"/><path d="M278 256 L291 257 L284 268"/>
+        <path d="M586 146 Q510 160 446 194"/><path d="M458 197 L445 195 L452 184"/>
+        <path d="M584 280 Q545 272 505 282"/><path d="M516 276 L504 282 L515 290"/>
+        <path d="M150 418 Q230 400 314 386"/><path d="M302 382 L315 386 L305 394"/>
+        <path d="M402 546 Q382 534 378 514"/><path d="M371 523 L378 512 L386 521"/>
+      </g>
+    </g>
+    <g fill="#3B4247" font-family="Kalam, 'Segoe Print', 'Comic Sans MS', cursive">
+      <text x="359" y="24" text-anchor="middle" font-size="23">about 2 of my hands wide</text>
+      <text x="26" y="170" font-size="28" font-weight="700">water balls!</text>
+      <text x="16" y="302" font-size="28" font-weight="700">DRY under here!</text>
+      <text x="592" y="152" font-size="27">shiny</text>
+      <text x="590" y="287" font-size="28">waxy?</text>
+      <text x="566" y="315" font-size="21">like a crayon</text>
+      <text x="28" y="428" font-size="26">super clean!</text>
+      <text x="396" y="566" font-size="24">rolls off when I tip it!</text>
+    </g>
+  </symbol>
+</svg>
+
+<div id="viewport">
+<div id="stage">
+
+  <!-- ============ WELCOME ============ -->
+  <section class="slide" data-id="welcome" data-steps="1" data-label="Welcome">
+    <div class="welcome">
+      <div class="w-text">
+        <p class="eyebrow">Parent &amp; teacher focus group</p>
+        <h1>A Week with <em>Maya</em></h1>
+        <p class="w-lede">Early ideas for a classroom AI that helps middle schoolers do their own thinking.</p>
+      </div>
+      <svg class="w-art" viewBox="0 0 700 600" aria-hidden="true"><use href="#sketch-art"/></svg>
+      <ul class="w-cards">
+        <li><h3>These are early ideas</h3><p>We learn the most from what doesn't work. Please be blunt.</p></li>
+        <li><h3>Picture a real middle schooler</h3><p>Your own child, or a student you've taught. Keep them in mind all session.</p></li>
+        <li><h3>We're recording, with your OK</h3><p>So we capture what you say accurately.</p></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ HOW EACH STOP WORKS ============ -->
+  <section class="slide" data-id="how" data-steps="1" data-label="How each stop works">
+    <div class="how">
+      <p class="eyebrow">How today works</p>
+      <h2 class="big">Every stop follows the same three steps</h2>
+      <ol class="rhythm">
+        <li><span class="n">1</span><h3>Watch</h3><p class="t">2–3 minutes</p><p>We share a moment from Maya's week and talk you through it. You just watch.</p></li>
+        <li><span class="n">2</span><h3>Type</h3><p class="t">About 1 minute</p><p>Everyone types a first reaction in the Zoom chat, before anyone speaks.</p></li>
+        <li><span class="n">3</span><h3>Talk</h3><p class="t">The rest of the stop</p><p>We start from what you wrote in the chat and ask a few open questions.</p></li>
+      </ol>
+      <p class="how-foot">You don't need any background in technology or AI. If something confuses you, say so. That helps us too.</p>
+    </div>
+  </section>
+
+  <!-- ============ OPENING: TWO TUTORS ============ -->
+  <section class="slide" data-id="tutors" data-steps="6" data-react="5" data-label="Opening · Two tutors">
+    <header class="stophead">
+      <div class="stoptitle"><p class="eyebrow">Before we meet Maya</p><h2>Two tutors</h2></div>
+      <p class="headnote">Same student. Same question. Two different AI tutors.</p>
+    </header>
+    <div class="main tutors">
+      <div class="shared">
+        <span class="who">Student · sent to both tutors</span>
+        <p>i have to invent something inspired by nature for science. i found a leaf where the water rolls right off. what should i invent?</p>
+      </div>
+      <div class="lanes">
+        <div class="lane">
+          <div class="lane-h"><span class="tav">A</span>Tutor A</div>
+          <div class="lane-b">
+            <div class="tb tutor" data-s="1">
+              <p>Great find! That's called the <b>lotus effect</b>. The leaf is covered in tiny waxy bumps that trap air, so water beads up and rolls off, taking dirt with it.</p>
+              <p>Here are three inventions you could make:</p>
+              <ol><li>A self-cleaning window coating</li><li>A raincoat that never gets soaked</li><li>Paint that keeps buildings clean</li></ol>
+              <p>The raincoat is the easiest to explain. Want me to write up your design description too?</p>
+            </div>
+            <div class="tb student" data-s="2"><p>YES omg that would save me. thank you!!</p></div>
+            <div class="tb tutor" data-s="2"><p>Here you go! “My invention is a raincoat inspired by the lotus leaf. Its surface copies the leaf's tiny waxy bumps, so rain…”</p></div>
+          </div>
+        </div>
+        <div class="lane">
+          <div class="lane-h"><span class="tav">B</span>Tutor B</div>
+          <div class="lane-b">
+            <div class="tb tutor" data-s="3"><p>Cool find! What did you notice when you touched the leaf?</p></div>
+            <div class="tb student" data-s="3"><p>it felt waxy. and it was dry under the drops</p></div>
+            <div class="tb tutor" data-s="3"><p>So the leaf keeps water out. Where in your life do you wish water would roll off like that?</p></div>
+            <div class="tb student" data-s="4"><p>my backpack. my homework got soaked last week</p></div>
+            <div class="tb tutor" data-s="4"><p>That's a real problem to solve. What would your backpack need to copy from the leaf?</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <aside class="react-card" data-s="5">
+      <p class="rc-eye"><svg><use href="#i-chat"/></svg>Quick reaction · Zoom chat</p>
+      <p class="rc-lead">Type <b>A</b> or <b>B</b> for each question.</p>
+      <ol class="rc-list">
+        <li>Which would you want your child or students using?</li>
+        <li>Which one would a middle schooler like more?</li>
+      </ol>
+      <div class="react-timer" aria-hidden="true"><span></span></div>
+      <p class="rc-foot">About one minute</p>
+    </aside>
+  </section>
+
+  <!-- ============ MAYA'S WEEK ============ -->
+  <section class="slide" data-id="week" data-steps="1" data-label="Maya's week">
+    <div class="wk">
+      <p class="eyebrow">Meet Maya</p>
+      <h2 class="big">Maya's week</h2>
+      <p class="lede">Maya is a 7th grader we made up. This week her science class invents something inspired by nature. We'll follow her through it.</p>
+      <ol class="days">
+        <li class="day"><span class="stopflag">Stop 1</span><span class="d">Monday</span><h3>Goes outside</h3><p>Explores the schoolyard. Sketches and writes about what she finds in her field journal.</p><span class="chip hands"><svg><use href="#i-pencil"/></svg>Hands-on</span></li>
+        <li class="day"><span class="stopflag">Stop 2</span><span class="d">Tuesday</span><h3>Meets the robot</h3><p>Shares her sketch and a photo with the AI, which answers mostly with questions.</p><span class="chip ai"><svg><use href="#i-chat"/></svg>Short time with AI</span></li>
+        <li class="day"><span class="stopflag">Stops 3 &amp; 4</span><span class="d">Wednesday</span><h3>Works on her idea</h3><p>Talks her idea through with the AI. Her teacher watches the whole class's progress.</p><span class="chip ai"><svg><use href="#i-chat"/></svg>Short time with AI</span></li>
+        <li class="day off"><span class="d">Thursday</span><h3>Builds a prototype</h3><p>Tests materials and builds a rough model of her invention.</p><span class="chip hands"><svg><use href="#i-pencil"/></svg>Hands-on</span></li>
+        <li class="day off"><span class="d">Friday</span><h3>Shares with the class</h3><p>Explains her invention and where the idea came from.</p><span class="chip hands"><svg><use href="#i-pencil"/></svg>Hands-on</span></li>
+      </ol>
+      <p class="wk-foot"><b>Most of Maya's week happens away from the screen.</b> Today we pause at four moments.</p>
+    </div>
+  </section>
+
+  <!-- ============ STOP 1 ============ -->
+  <section class="slide" data-id="stop1" data-steps="6" data-react="5" data-label="Stop 1 · Maya goes outside">
+    <header class="stophead">
+      <div class="stoptitle"><p class="eyebrow">Stop 1 of 4 · Monday</p><h2>Maya goes outside</h2><p class="sub">After the morning rain, Maya finds a big leaf by the fence. No screens yet.</p></div>
+      <ol class="week">
+        <li class="now">Mon<b>Goes outside</b></li><li class="later">Tue<b>Meets the robot</b></li><li class="later">Wed<b>Her idea</b></li><li class="later">Thu<b>Builds</b></li><li class="later">Fri<b>Shares</b></li>
+      </ol>
+    </header>
+    <div class="main">
+      <div class="journal">
+        <div class="jpage">
+          <div class="jhead"><span>Field journal</span><span class="hand">Maya R.</span></div>
+          <svg class="sketch" viewBox="0 0 700 600" role="img" aria-label="Maya's pencil sketch of a big leaf covered in water drops, with handwritten labels"><use href="#sketch-art"/></svg>
+        </div>
+        <div class="jpage">
+          <div class="jmeta">
+            <span>Date<span class="hand">Monday</span></span>
+            <span>Weather<span class="hand">just rained</span></span>
+            <span>Where<span class="hand">by the fence, near the garden</span></span>
+          </div>
+          <div class="prompt"><span class="plabel">I notice…</span><div class="lines"><p data-s="1">The rain made little balls on the leaf. They don't soak in. When I tip it, they roll off and take the dirt with them.</p></div></div>
+          <div class="prompt"><span class="plabel">It feels like…</span><div class="lines"><p data-s="2">Smooth and waxy, like a crayon. Under the drops it's totally DRY!</p></div></div>
+          <div class="prompt"><span class="plabel">It sounds like…</span><div class="lines"><p data-s="3">Almost nothing. Tiny taps when the drops fall off.</p></div></div>
+          <div class="prompt"><span class="plabel">I wonder…</span><div class="lines"><p data-s="4">Why doesn't the water soak in? Why is the leaf so clean when the ground is all muddy?</p></div></div>
+        </div>
+      </div>
+    </div>
+    <aside class="react-card" data-s="5">
+      <p class="rc-eye"><svg><use href="#i-chat"/></svg>Quick reaction · Zoom chat</p>
+      <p class="rc-lead">Type your first thought before anyone speaks.</p>
+      <h3 class="rc-q">What do you think of students doing this part by hand, before the AI is involved?</h3>
+      <div class="react-timer" aria-hidden="true"><span></span></div>
+      <p class="rc-foot">About one minute</p>
+    </aside>
+  </section>
+
+  <!-- ============ STOP 2 ============ -->
+  <section class="slide" data-id="stop2" data-steps="5" data-react="4" data-label="Stop 2 · Maya meets the robot">
+    <header class="stophead">
+      <div class="stoptitle"><p class="eyebrow">Stop 2 of 4 · Tuesday</p><h2>Maya meets the robot</h2><p class="sub">Maya uploads her sketch and a photo of the leaf.</p></div>
+      <ol class="week">
+        <li class="done">Mon<b>Goes outside</b></li><li class="now">Tue<b>Meets the robot</b></li><li class="later">Wed<b>Her idea</b></li><li class="later">Thu<b>Builds</b></li><li class="later">Fri<b>Shares</b></li>
+      </ol>
+    </header>
+    <div class="main">
+      <div class="device">
+        <div class="dev-bar">
+          <div class="app-id"><b>Innovation inspired by nature</b><span>7th grade science</span></div>
+          <div class="mapwrap"><span class="maplabel">Chapter map</span>
+            <ol class="chapters" data-now="1"><li>Notice</li><li>Ask how</li><li>Nature's strategy</li><li>Find a problem</li><li>Invent</li><li>Build &amp; test</li></ol>
+          </div>
+          <div class="user"><i>M</i>Maya R.</div>
+        </div>
+        <div class="dev-body s2">
+          <div class="chat">
+            <div class="turn me" data-s="0">
+              <i class="av">M</i>
+              <div class="bw"><span class="who">Maya</span>
+                <div class="bubble">
+                  <div class="attach">
+                    <figure><img class="leaf-photo" alt="Maya's photo of the leaf with water drops"><figcaption>leaf photo</figcaption></figure>
+                    <figure><svg viewBox="0 0 700 600" aria-label="Maya's journal sketch"><use href="#sketch-art"/></svg><figcaption>journal sketch</figcaption></figure>
+                  </div>
+                  <p>this is my leaf from outside. the water makes little balls and rolls off</p>
+                </div>
+              </div>
+            </div>
+            <div class="turn bot" data-s="1">
+              <svg class="av" aria-hidden="true"><use href="#robot"/></svg>
+              <div class="bw"><span class="who">Robot</span>
+                <div class="bubble">
+                  <p>Hi Maya! I'm a robot, a computer program. Here's what I can and can't do with your photo.</p>
+                  <div class="cansee">
+                    <div class="yes"><b><svg><use href="#i-check"/></svg>I can see</b>A green leaf with round, shiny drops of water on it.</div>
+                    <div class="no"><b><svg><use href="#i-cross"/></svg>I can't</b>Feel it, smell it, or watch the drops roll. You did that.</div>
+                  </div>
+                  <p>So you're the expert on this leaf. On your sketch you wrote “DRY under here!” What did that feel like?</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="dash" data-on="2">
+            <div class="dash-h"><b>Robot dashboard</b><span class="power"><span class="p-off">Off</span><span class="p-on">On</span></span></div>
+            <div class="gauge">
+              <h4>How sure am I?</h4>
+              <div class="sure">
+                <span class="claim">These are drops of water on a leaf</span>
+                <span class="meter"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i></span>
+                <span class="verdict"><b>Very sure</b></span>
+              </div>
+              <div class="sure">
+                <span class="claim">What kind of plant this is</span>
+                <span class="meter low"><i class="f"></i><i></i><i></i><i></i><i></i></span>
+                <span class="verdict"><b>Not sure.</b> Maybe an elephant ear?</span>
+              </div>
+            </div>
+            <div class="gauge">
+              <h4>What I'm using</h4>
+              <ul class="using">
+                <li class="y"><svg><use href="#i-check"/></svg>Your photo (only the pixels)</li>
+                <li class="y"><svg><use href="#i-check"/></svg>The words on your sketch</li>
+                <li class="y"><svg><use href="#i-check"/></svg>Patterns from lots of photos I learned from</li>
+                <li class="n"><svg><use href="#i-cross"/></svg>How the leaf feels. Only you know that.</li>
+              </ul>
+            </div>
+            <div class="xbtn" data-on="3"><svg><use href="#i-glasses"/></svg><div><b>Put on X-ray glasses</b><span>See how I got my answer</span></div></div>
+          </div>
+          <div class="xray" data-s="3" data-until="4">
+            <div class="xray-h"><svg><use href="#i-glasses"/></svg><b>X-ray glasses</b><span>How I got my answer</span></div>
+            <div class="xcol">
+              <div class="xfig"><img class="leaf-photo" alt=""><span class="xbox" id="xbox"></span></div>
+              <p class="xcap">Your photo is <b>640 × 480</b> pixels. That's <b>307,200</b> tiny colored squares.</p>
+              <canvas id="zoom" width="272" height="272" aria-label="One water drop from the photo, zoomed in until the pixels show"></canvas>
+              <p class="xcap">The circled square is <b id="px-rgb">red · green · blue</b>.</p>
+            </div>
+            <ol class="xsteps">
+              <li><div><h5>I turned your photo into numbers</h5><p>Every square is just three numbers: how red, how green, how blue.</p></div></li>
+              <li><div><h5>I matched patterns</h5><p>Round, bright spots with dark edges look like lots of photos of water drops I learned from. So I'm very sure about the drops.</p></div></li>
+              <li><div><h5>I guessed the plant</h5><p>The leaf's shape is a bit like a few plants I know. None of them match well, so I'm not sure.</p></div></li>
+              <li class="limit"><div><h5>I hit my limits</h5><p>Nothing in the pixels tells me if the leaf is waxy, or dry under the drops. That's why I asked you.</p></div></li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </div>
+    <aside class="react-card" data-s="4">
+      <p class="rc-eye"><svg><use href="#i-chat"/></svg>Quick reaction · Zoom chat</p>
+      <p class="rc-lead">Type your first thought before anyone speaks.</p>
+      <h3 class="rc-q">How do you feel about the robot saying what it can't do?</h3>
+      <div class="react-timer" aria-hidden="true"><span></span></div>
+      <p class="rc-foot">About one minute</p>
+    </aside>
+  </section>
+
+  <!-- ============ BREAK ============ -->
+  <section class="slide" data-id="break" data-steps="1" data-label="Break">
+    <div class="center">
+      <p class="eyebrow">Break</p>
+      <div class="count" id="count" role="timer" aria-live="off">4:00</div>
+      <p class="lead">Stretch, refill your coffee. Back in four minutes.</p>
+      <button class="restart" id="restart" type="button">Restart timer</button>
+      <p class="next">Up next: <b>Maya works through her idea</b>, then <b>her teacher's screen</b>.</p>
+    </div>
+  </section>
+
+  <!-- ============ STOP 3 ============ -->
+  <section class="slide" data-id="stop3" data-steps="8" data-react="7" data-label="Stop 3 · Maya works through her idea">
+    <header class="stophead">
+      <div class="stoptitle"><p class="eyebrow">Stop 3 of 4 · Wednesday</p><h2>Maya works through her idea</h2><p class="sub">Every idea on her board is tagged with where it came from.</p></div>
+      <ol class="week">
+        <li class="done">Mon<b>Goes outside</b></li><li class="done">Tue<b>Meets the robot</b></li><li class="now">Wed<b>Her idea</b></li><li class="later">Thu<b>Builds</b></li><li class="later">Fri<b>Shares</b></li>
+      </ol>
+    </header>
+    <div class="main">
+      <div class="device">
+        <div class="dev-bar">
+          <div class="app-id"><b>Innovation inspired by nature</b><span>7th grade science</span></div>
+          <div class="mapwrap"><span class="maplabel">Chapter map</span>
+            <ol class="chapters" data-now="2"><li>Notice</li><li>Ask how</li><li>Nature's strategy</li><li>Find a problem</li><li>Invent</li><li>Build &amp; test</li></ol>
+          </div>
+          <div class="user"><i>M</i>Maya R.</div>
+        </div>
+        <div class="dev-body s3">
+          <div class="chat">
+            <div class="turn bot" data-s="0"><svg class="av" aria-hidden="true"><use href="#robot"/></svg><div class="bw"><span class="who">Robot</span><div class="bubble"><p>Welcome back, Maya. Yesterday you told me the leaf felt waxy and was dry under the drops. Using your own words, what is the leaf doing to the water?</p></div></div></div>
+            <div class="turn me" data-s="1"><i class="av">M</i><div class="bw"><span class="who">Maya</span><div class="bubble"><p>it doesnt let the water in. it pushes it into balls so it rolls away</p></div></div></div>
+            <div class="turn bot" data-s="1"><svg class="av" aria-hidden="true"><use href="#robot"/></svg><div class="bw"><span class="who">Robot</span><div class="bubble"><p>That's nature's strategy, in your words. Where in your life do you wish water rolled away instead of soaking in?</p></div></div></div>
+            <div class="turn me" data-s="2"><i class="av">M</i><div class="bw"><span class="who">Maya</span><div class="bubble"><p>my shoes!! they get soaked at the bus stop every time it rains</p></div></div></div>
+            <div class="turn bot" data-s="2"><svg class="av" aria-hidden="true"><use href="#robot"/></svg><div class="bw"><span class="who">Robot</span><div class="bubble"><p>That's a real problem. What would your shoe need to copy from the leaf?</p></div></div></div>
+            <div class="turn me" data-s="3"><i class="av">M</i><div class="bw"><span class="who">Maya</span><div class="bubble"><p>the waxy part?</p></div></div></div>
+            <div class="turn bot" data-s="3"><svg class="av" aria-hidden="true"><use href="#robot"/></svg><div class="bw"><span class="who">Robot</span><div class="bubble"><p>Maybe! Want to test that first? Drip water on a candle, a crayon, and a paper towel. Which one acts most like your leaf?</p></div></div></div>
+            <div class="turn me" data-s="4"><i class="av">M</i><div class="bw"><span class="who">Maya</span><div class="bubble"><p>can you just tell me how to make the shoe</p></div></div></div>
+            <div class="turn bot" data-s="4"><svg class="av" aria-hidden="true"><use href="#robot"/></svg><div class="bw"><span class="who">Robot</span><div class="bubble"><p>That part is yours to invent. Here's a hint: look at your sketch. What happened when you tipped the leaf?</p></div></div></div>
+            <div class="turn me" data-s="5"><i class="av">M</i><div class="bw"><span class="who">Maya</span><div class="bubble"><p>idk just give me the answer pls</p></div></div></div>
+            <div class="turn bot" data-s="5"><svg class="av" aria-hidden="true"><use href="#robot"/></svg><div class="bw"><span class="who">Robot</span><div class="bubble"><p>This part is hard, and that's normal. Let's make it smaller. Finish this sentence: “My shoe would stay dry if the outside…”</p></div></div></div>
+            <div class="turn me" data-s="6"><i class="av">M</i><div class="bw"><span class="who">Maya</span><div class="bubble"><p>idk. just tell me</p></div></div></div>
+          </div>
+          <div class="board">
+            <div class="board-h"><b>My idea board</b><span>Each idea shows where it came from.</span></div>
+            <div class="idea" data-s="0" data-from="maya"><span class="tag tg-journal"><svg><use href="#i-pencil"/></svg>Maya · journal</span><span>Water makes little balls and rolls off</span></div>
+            <div class="idea" data-s="0" data-from="maya"><span class="tag tg-journal"><svg><use href="#i-pencil"/></svg>Maya · journal</span><span>Feels waxy, like a crayon. Dry under the drops.</span></div>
+            <div class="idea" data-s="0" data-from="maya"><span class="tag tg-journal"><svg><use href="#i-pencil"/></svg>Maya · journal</span><span>Leaf stays clean, even though the ground is muddy</span></div>
+            <div class="idea" data-s="1" data-from="maya"><span class="tag tg-chat"><svg><use href="#i-chat"/></svg>Maya · chat</span><span><b>Nature's strategy:</b> the leaf won't let water in. It pushes it into balls.</span></div>
+            <div class="idea" data-s="2" data-from="maya"><span class="tag tg-chat"><svg><use href="#i-chat"/></svg>Maya · chat</span><span><b>My problem:</b> my shoes get soaked at the bus stop</span></div>
+            <div class="idea" data-s="3" data-from="maya"><span class="tag tg-chat"><svg><use href="#i-chat"/></svg>Maya · chat</span><span><b>Idea:</b> copy the waxy part?</span></div>
+            <div class="idea from-robot" data-s="3" data-from="robot"><span class="tag tg-robot"><svg><use href="#robot"/></svg>Robot idea</span><span><b>Test first:</b> drip water on a candle, a crayon, a paper towel</span></div>
+            <div class="tally">
+              <div class="tally-h"><span>Whose ideas?</span><span id="tally-text">Maya 3 · Robot 0</span></div>
+              <div class="tally-bar"><span class="tb-maya" id="tb-maya" style="flex-grow:3"></span><span class="tb-robot" id="tb-robot" style="flex-grow:0"></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <aside class="react-card" data-s="7">
+      <p class="rc-eye"><svg><use href="#i-chat"/></svg>Quick reaction · Zoom chat</p>
+      <p class="rc-lead">Type your first thought before anyone speaks.</p>
+      <h3 class="rc-q">Look at the tags on her idea board. Whose work does this feel like?</h3>
+      <div class="react-timer" aria-hidden="true"><span></span></div>
+      <p class="rc-foot">About one minute</p>
+    </aside>
+  </section>
+
+  <!-- ============ STOP 4 ============ -->
+  <section class="slide" data-id="stop4" data-steps="5" data-react="4" data-label="Stop 4 · The teacher's view">
+    <header class="stophead">
+      <div class="stoptitle"><p class="eyebrow">Stop 4 of 4 · Wednesday, same moment</p><h2>The teacher's view</h2><p class="sub">Maya keeps asking for the answer. Here's what her teacher sees.</p></div>
+      <ol class="week">
+        <li class="done">Mon<b>Goes outside</b></li><li class="done">Tue<b>Meets the robot</b></li><li class="now">Wed<b>Teacher view</b></li><li class="later">Thu<b>Builds</b></li><li class="later">Fri<b>Shares</b></li>
+      </ol>
+    </header>
+    <div class="main">
+      <div class="device">
+        <div class="dev-bar">
+          <div class="app-id"><b>Teacher view</b><span>Period 3 · 7th grade science</span></div>
+          <div class="mapwrap"><span class="maplabel">Lesson</span><span style="font-size:17px;color:var(--text)">Innovation inspired by nature · Day 3 of 5</span></div>
+          <div class="user"><i class="tch">A</i>Ms. Alvarez</div>
+        </div>
+        <div class="dist">
+          <span class="dist-l">Where the class is</span>
+          <div class="dist-cols" id="dist"></div>
+        </div>
+        <div class="dev-body s4">
+          <div class="tiles" id="tiles">
+            <div class="peek" data-s="3">
+              <div class="peek-h"><b>Maya's last messages to the robot</b><span>Optional</span></div>
+              <ol>
+                <li>can you just tell me how to make the shoe<time>10:14</time></li>
+                <li>idk just give me the answer pls<time>10:16</time></li>
+                <li>idk. just tell me<time>10:18</time></li>
+              </ol>
+            </div>
+          </div>
+          <div class="alerts">
+            <div class="alerts-h">Needs attention</div>
+            <div class="calm collapse" data-until="1"><svg><use href="#i-calm"/></svg>No one needs help right now.</div>
+            <div class="alert" data-s="1">
+              <div class="alert-h"><span class="dot"></span><b>Maya R. may be stuck</b><time>just now</time></div>
+              <div class="alert-b">
+                <p>She has asked the robot for the answer <b>3 times</b> in the last 5 minutes.</p>
+                <div class="kv" data-s="2"><span>Where she is</span>Invent. Her problem: “my shoes get soaked at the bus stop.”</div>
+                <div class="kv" data-s="2"><span>The robot already tried</span>A hint about her sketch, then a sentence starter.</div>
+                <div class="kv" data-s="2"><span>Ways you could step in</span>
+                  <ul class="ways">
+                    <li>Ask her to explain her leaf sketch out loud.</li>
+                    <li>Hand her the test kit: candle, crayon, paper towel, dropper.</li>
+                    <li>Pair her with Dev P. He's also working on staying dry.</li>
+                  </ul>
+                </div>
+                <div class="btns" data-s="2"><span class="btn primary">I'll check in</span><span class="btn">Remind me in 5 min</span><span class="btn">Dismiss</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <aside class="react-card" data-s="4">
+      <p class="rc-eye"><svg><use href="#i-chat"/></svg>Quick reaction · Zoom chat</p>
+      <p class="rc-lead">Type your first thought before anyone speaks.</p>
+      <div class="rc-split">
+        <div><span>Teachers</span><h3>What would you do with this information?</h3></div>
+        <div><span>Parents</span><h3>How do you feel about the AI flagging a student?</h3></div>
+      </div>
+      <div class="react-timer" aria-hidden="true"><span></span></div>
+      <p class="rc-foot">About one minute</p>
+    </aside>
+  </section>
+
+  <!-- ============ WRAP-UP ============ -->
+  <section class="slide" data-id="change" data-steps="1" data-label="Wrap-up · One change">
+    <div class="center">
+      <p class="eyebrow">Wrap-up</p>
+      <h2 class="q">If you could change one thing about what you saw, what would it be?</h2>
+      <p class="next">Type it in the Zoom chat first. Then we'll hear from each of you.</p>
+    </div>
+  </section>
+
+  <!-- ============ SURVEY ============ -->
+  <section class="slide" data-id="survey" data-steps="1" data-label="Post-session survey">
+    <div class="center">
+      <p class="eyebrow">Thank you</p>
+      <h2 class="q">One last thing: a short survey</h2>
+      <div class="steps3">
+        <div><span>Where</span>The link is in the Zoom chat.</div>
+        <div><span>How long</span>About 10 minutes.</div>
+        <div><span>Keep in mind</span>The middle schooler you pictured today.</div>
+      </div>
+      <p class="next">We'll stay on Zoom while you finish, in case anything is unclear.</p>
+    </div>
+  </section>
+
+</div>
+</div>
+
+<nav id="controls" aria-label="Presenter controls">
+  <button class="cb" id="prev" type="button" aria-label="Previous step">◀ Back</button>
+  <span id="pos" aria-live="polite"></span>
+  <button class="cb" id="next" type="button" aria-label="Next step">Next ▶</button>
+  <span class="sep" aria-hidden="true"></span>
+  <select id="jump" aria-label="Jump to section"></select>
+  <button class="cb" id="notesBtn" type="button" aria-pressed="false">Notes</button>
+  <button class="cb" id="fsBtn" type="button">Full screen</button>
+</nav>
+<aside id="notes" hidden aria-label="Presenter notes"></aside>
+
+<script>
+(() => {
+  const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const stage = document.getElementById('stage');
+  const slides = [...stage.querySelectorAll('.slide')];
+  const ids = slides.map(s => s.dataset.id);
+  let cur = 0, step = 0, lastCur = -1, lastReactKey = '';
+
+  const NOTES = {
+    welcome: { time:'0:00–0:07', mod:'—', say:['Intros by role only (parent or teacher). Recording and consent reminder. Frame it: these are early ideas and we learn the most from what doesn\'t work. Ask everyone to keep one real middle schooler in mind.'] },
+    how: { time:'~0:06', mod:'—', say:['Explain the rhythm once: watch, type in the chat, then talk. From here on, every stop works the same way.'] },
+    tutors: { time:'0:07–0:15', mod:'Framing', say:[
+      'Read the student\'s message aloud. Same student, same question, two tutors.',
+      'Tutor A answers. Read it in a neutral voice.',
+      'The student says yes, and Tutor A starts writing it for them.',
+      'Tutor B answers with a question. The student replies.',
+      'Tutor B keeps handing the thinking back.',
+      'Ask for A or B on each question in the chat.'],
+      ask:['Which would you want your child or students using?','Which one do you think a middle schooler would like more?'],
+      tip:'The tutor labels are neutral on purpose. Don\'t say which one is ours, and don\'t point out the gap between the two answers. Let participants find it.' },
+    week: { time:'~0:15', mod:'—', say:['Maya is made up. Point out that most of her week is hands-on and away from the screen. We\'ll pause at four moments.'],
+      tip:'Thursday and Friday are placeholders. Confirm they match the lesson before the session.' },
+    stop1: { time:'0:15–0:28', mod:'Journal (3)', say:[
+      'Monday after the rain. Maya finds a big leaf by the fence and sketches it. Point out her labels and the "2 hands wide" scale line.',
+      'I notice…',
+      'It feels like… (touch, which a photo can\'t capture)',
+      'It sounds like…',
+      'I wonder… (her own question drives the rest of the week)',
+      'Quick reaction in the chat.'],
+      ask:['What do you think of students doing this part by hand, before the AI is involved?','What would make this work, or not work, in a real school day or as homework?'] },
+    stop2: { time:'0:28–0:43', mod:'Glass-box (1) · Robot & limits (2)', say:[
+      'Tuesday. Maya uploads her photo and her sketch.',
+      'The robot answers. Read the "I can see / I can\'t" part slowly.',
+      'The dashboard turns on: how sure it is, and what it\'s using.',
+      'X-ray glasses: how it got its answer, down to the pixels.',
+      'Quick reaction in the chat. (X-ray closes so the robot\'s reply is visible again.)'],
+      ask:['What does the robot\'s explanation tell you about how it works?','How do you feel about the AI saying what it can\'t do?','Would the gauges make sense to a 12-year-old? Would they change how much you trust the AI?','When you looked at the gauges, what specific signal gave you confidence, or left you confused, about how the AI was processing information?'] },
+    break: { time:'0:43–0:47', mod:'—', say:['The timer starts when this slide appears.'] },
+    stop3: { time:'0:47–0:58', mod:'Pacing & navigation (4) · Ownership tags (3)', say:[
+      'Wednesday. The robot opens with a question about what Maya said yesterday. Point out the chapter map.',
+      'Maya names nature\'s strategy in her own words. It lands on her idea board, tagged as hers. The chapter map moves.',
+      'She finds a problem: soaked shoes. The map moves to Invent.',
+      'The robot suggests a hands-on test. Note the "Robot idea" tag.',
+      'Maya asks for the answer. The robot gives a hint instead.',
+      'She asks again. The robot makes the step smaller.',
+      'A third ask. Hold here for a beat. This sets up Stop 4.',
+      'Quick reaction in the chat.'],
+      ask:['Does this pace feel right for middle schoolers?','When you look at the tags, whose work does this feel like?','Which students would this work well for, and which would struggle?','At what point did you feel the student was still in the driver\'s seat versus relying on the AI? What feature enforced that boundary best?'] },
+    stop4: { time:'0:58–1:12', mod:'Teacher view (5)', say:[
+      'Same Wednesday, from the teacher\'s screen. Each tile shows where a student is on the chapter map.',
+      'An alert appears on Maya\'s tile.',
+      'Open it: what happened, what the robot already tried, and ways to step in.',
+      'Optional: Maya\'s last messages. Use it for a teacher group, or skip it if time is short.',
+      'Quick reaction. Teachers and parents get different prompts.'],
+      ask:['Teachers: What would you do with this information? What\'s missing, and what\'s too much?','Teachers: What specific data or alert would make you step in right away? What feels like noise or extra overhead?','Parents: What would you want the teacher to know about your child at a moment like this?','Parents: How do you feel about the AI flagging a student?'] },
+    change: { time:'1:12–1:18', mod:'—', say:['Chat first, then go around so everyone speaks.'],
+      ask:['If time allows: How will middle schoolers react when the tool pushes back? Where is the line between productive struggle and giving up for an 11–14-year-old?','If time allows: How would this work for students behind grade level versus high achievers? Does it scaffold enough for struggling readers?','If time allows: What is the first barrier a middle schooler will hit in their first 5 minutes? What needs explaining before they start?'] },
+    survey: { time:'1:18–1:30', mod:'—', say:['Paste the survey link in the chat. Stay on Zoom while people finish.'] }
+  };
+
+  /* ---------- Maya's photo: drawn once, used for her upload and the X-ray view ---------- */
+  function rng(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+  const W = 640, H = 480;
+  const photo = document.createElement('canvas'); photo.width = W; photo.height = H;
+  const g = photo.getContext('2d');
+  const rnd = rng(11);
+  const drops = [];
+  (function draw(){
+    const bg = g.createLinearGradient(0,0,0,H); bg.addColorStop(0,'#27351F'); bg.addColorStop(1,'#3A3224');
+    g.fillStyle = bg; g.fillRect(0,0,W,H);
+    for (let i=0;i<70;i++){
+      const x=rnd()*W, y=rnd()*H, r=20+rnd()*80;
+      const col = rnd()<.55 ? '74,98,52' : '96,80,58';
+      const rg = g.createRadialGradient(x,y,0,x,y,r);
+      rg.addColorStop(0,`rgba(${col},${.3+rnd()*.35})`); rg.addColorStop(1,`rgba(${col},0)`);
+      g.fillStyle = rg; g.fillRect(x-r,y-r,2*r,2*r);
+    }
+    const leaf = new Path2D();
+    leaf.moveTo(330,95);
+    leaf.bezierCurveTo(250,20,90,10,58,122);
+    leaf.bezierCurveTo(35,232,170,380,350,476);
+    leaf.bezierCurveTo(520,380,642,240,616,122);
+    leaf.bezierCurveTo(590,20,420,20,330,95);
+    leaf.closePath();
+    g.save(); g.shadowColor='rgba(0,0,0,.5)'; g.shadowBlur=34; g.shadowOffsetY=14; g.fillStyle='#4F8A3A'; g.fill(leaf); g.restore();
+    const lg = g.createLinearGradient(70,60,570,470); lg.addColorStop(0,'#7DB451'); lg.addColorStop(.5,'#5C973D'); lg.addColorStop(1,'#3C722D');
+    g.fillStyle = lg; g.fill(leaf);
+    g.save(); g.clip(leaf);
+    const sh = g.createRadialGradient(230,170,10,230,170,320); sh.addColorStop(0,'rgba(232,255,210,.30)'); sh.addColorStop(1,'rgba(232,255,210,0)');
+    g.fillStyle = sh; g.fillRect(0,0,W,H);
+    g.lineCap='round';
+    g.strokeStyle='rgba(214,240,188,.55)'; g.lineWidth=5;
+    g.beginPath(); g.moveTo(330,108); g.quadraticCurveTo(346,290,352,470); g.stroke();
+    g.lineWidth=2.6; g.strokeStyle='rgba(214,240,188,.42)';
+    [[.14,-1],[.14,1],[.3,-1],[.3,1],[.47,-1],[.47,1],[.64,-1],[.64,1],[.8,-1],[.8,1]].forEach(([t,s])=>{
+      const my = 108 + t*362, mx = 330 + t*22;
+      const reach = 250*(1-t*.72);
+      g.beginPath(); g.moveTo(mx,my); g.quadraticCurveTo(mx+s*reach*.5, my+8, mx+s*reach, my+55+t*40); g.stroke();
+    });
+    let tries = 0;
+    while (drops.length < 30 && tries < 4000){
+      tries++;
+      const r = 5 + Math.pow(rnd(),2.2)*27;
+      const x = 40 + rnd()*(W-80), y = 60 + rnd()*(H-100);
+      const inside = [[0,0],[r,0],[-r,0],[0,r],[0,-r]].every(([dx,dy]) => g.isPointInPath(leaf,x+dx,y+dy));
+      if (!inside) continue;
+      if (drops.some(d => Math.hypot(d.x-x,d.y-y) < d.r + r + 5)) continue;
+      drops.push({x,y,r});
+    }
+    if (!drops.some(d => d.r > 11 && d.r < 17)) drops.push({x:250,y:220,r:14});
+    drops.forEach(({x,y,r})=>{
+      const cs = g.createRadialGradient(x+r*.25,y+r*.35,0,x+r*.25,y+r*.35,r*1.15);
+      cs.addColorStop(0,'rgba(10,35,5,.5)'); cs.addColorStop(1,'rgba(10,35,5,0)');
+      g.fillStyle = cs; g.beginPath(); g.ellipse(x+r*.22,y+r*.32,r*1.1,r*1,0,0,Math.PI*2); g.fill();
+      const b = g.createRadialGradient(x+r*.25,y+r*.35,r*.08,x,y,r);
+      b.addColorStop(0,'rgba(206,242,170,.96)'); b.addColorStop(.55,'rgba(122,182,86,.92)'); b.addColorStop(.86,'rgba(52,100,38,.96)'); b.addColorStop(1,'rgba(22,55,18,.98)');
+      g.fillStyle = b; g.beginPath(); g.arc(x,y,r,0,Math.PI*2); g.fill();
+      const hx=x-r*.38, hy=y-r*.42;
+      const hg = g.createRadialGradient(hx,hy,0,hx,hy,r*.36);
+      hg.addColorStop(0,'rgba(255,255,255,.97)'); hg.addColorStop(.5,'rgba(255,255,255,.55)'); hg.addColorStop(1,'rgba(255,255,255,0)');
+      g.fillStyle = hg; g.beginPath(); g.ellipse(hx,hy,r*.34,r*.23,-.6,0,Math.PI*2); g.fill();
+      g.strokeStyle='rgba(236,255,214,.38)'; g.lineWidth=Math.max(1,r*.08);
+      g.beginPath(); g.arc(x,y,r*.72,.35,1.9); g.stroke();
+    });
+    g.restore();
+    g.strokeStyle='rgba(28,58,20,.7)'; g.lineWidth=2; g.stroke(leaf);
+    const vg = g.createRadialGradient(W/2,H/2,H*.35,W/2,H/2,H*.9);
+    vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(0,0,0,.45)');
+    g.fillStyle = vg; g.fillRect(0,0,W,H);
+    const img = g.getImageData(0,0,W,H), d = img.data;
+    for (let i=0;i<d.length;i+=4){ const n=(rnd()-.5)*14; d[i]+=n; d[i+1]+=n; d[i+2]+=n; }
+    g.putImageData(img,0,0);
+  })();
+  let photoURL = '';
+  try { photoURL = photo.toDataURL('image/jpeg', .9); } catch(e) {}
+  document.querySelectorAll('img.leaf-photo').forEach(im => { if (photoURL) im.src = photoURL; });
+
+  (function zoom(){
+    const target = drops.slice().sort((a,b) => Math.abs(a.r-13.5) - Math.abs(b.r-13.5))[0];
+    const N = 32;
+    const sx = Math.round(Math.min(W-N, Math.max(0, target.x - N/2)));
+    const sy = Math.round(Math.min(H-N, Math.max(0, target.y - N/2)));
+    const box = document.getElementById('xbox');
+    box.style.left = (sx/W*100)+'%'; box.style.top = (sy/H*100)+'%';
+    box.style.width = (N/W*100)+'%'; box.style.height = (N/H*100)+'%';
+    const zc = document.getElementById('zoom'), z = zc.getContext('2d');
+    const S = zc.width / N;
+    const px = g.getImageData(sx, sy, N, N).data;
+    for (let j=0;j<N;j++) for (let i=0;i<N;i++){
+      const k = (j*N+i)*4; z.fillStyle = `rgb(${px[k]},${px[k+1]},${px[k+2]})`;
+      z.fillRect(i*S, j*S, S, S);
+    }
+    z.strokeStyle='rgba(255,255,255,.16)'; z.lineWidth=1;
+    for (let i=1;i<N;i++){ z.beginPath(); z.moveTo(i*S,0); z.lineTo(i*S,zc.height); z.stroke(); z.beginPath(); z.moveTo(0,i*S); z.lineTo(zc.width,i*S); z.stroke(); }
+    const hi = Math.round(N/2 - target.r*.38), hj = Math.round(N/2 - target.r*.42);
+    const pi = Math.min(N-2, Math.max(1, hi + 1)), pj = Math.min(N-2, Math.max(1, hj + 3));
+    const k = (pj*N+pi)*4;
+    z.strokeStyle='#FFD27A'; z.lineWidth=3;
+    z.beginPath(); z.arc(pi*S+S/2, pj*S+S/2, S*1.15, 0, Math.PI*2); z.stroke();
+    document.getElementById('px-rgb').textContent = `red ${px[k]} · green ${px[k+1]} · blue ${px[k+2]}`;
+  })();
+
+  /* ---------- sketch drops (shared by every copy of the sketch) ---------- */
+  (function sketchDrops(){
+    const NS = 'http://www.w3.org/2000/svg', host = document.getElementById('sk-drops');
+    [[185,185,17],[235,262,11],[385,195,21],[425,292,13],[330,335,9],[255,365,15],[150,275,8],[460,190,8],[352,425,10],[300,200,7],[200,320,6]].forEach(([x,y,r])=>{
+      const c = document.createElementNS(NS,'circle');
+      c.setAttribute('cx',x); c.setAttribute('cy',y); c.setAttribute('r',r); c.setAttribute('fill','rgba(47,109,166,.12)');
+      host.appendChild(c);
+      const a = document.createElementNS(NS,'path');
+      const s = [x - .59*r*.9, y - .10*r*.9], e = [x - .10*r*.9, y - .59*r*.9];
+      a.setAttribute('d',`M${s[0].toFixed(1)} ${s[1].toFixed(1)} A${(.6*r).toFixed(1)} ${(.6*r).toFixed(1)} 0 0 1 ${e[0].toFixed(1)} ${e[1].toFixed(1)}`);
+      a.setAttribute('stroke-width','2');
+      host.appendChild(a);
+    });
+  })();
+
+  /* ---------- teacher view: class tiles + where-the-class-is ---------- */
+  const CH = ['Notice','Ask how',"Nature's strategy",'Find a problem','Invent','Build & test'];
+  const CLASS = [['Aaliyah B.',3],['Andre D.',4],['Ava P.',3],['Camila J.',2],['Dev P.',4],['Emily N.',3],['Ethan W.',2],['Grace O.',3],['Hannah C.',3],['Isaiah F.',2],['Jada M.',2],['Jonah K.',3],['Kai Y.',4],['Lily H.',4],['Luis G.',3],['Marcus T.',2],['Mateo R.',2],['Maya R.',4],['Nadia A.',1],['Noah V.',3],['Owen S.',1],['Sofia M.',4],['Tyler B.',2],['Zoe L.',5]];
+  (function teacher(){
+    const tiles = document.getElementById('tiles');
+    const peek = tiles.querySelector('.peek');
+    CLASS.forEach(([name, at]) => {
+      const t = document.createElement('div'); t.className = 'tile';
+      if (name === 'Maya R.') t.dataset.on = '1';
+      t.innerHTML = `<b>${name}</b><span class="ch">${CH[at]}</span><span class="dots">${CH.map((_,i)=>`<i class="${i<at?'d':i===at?'n':''}"></i>`).join('')}</span>` + (name==='Maya R.' ? '<span class="badge">May be stuck</span>' : '');
+      tiles.insertBefore(t, peek);
+    });
+    const counts = CH.map((_,i) => CLASS.filter(c => c[1]===i).length);
+    const max = Math.max(...counts);
+    document.getElementById('dist').innerHTML = CH.map((c,i) => `<div class="dcol"><span class="nm">${c}</span><span class="ct">${counts[i]}</span><span class="bar"><i style="width:${counts[i]/max*100}%"></i></span></div>`).join('');
+  })();
+
+  /* ---------- stepping ---------- */
+  function setMap(ol, now){ if(!ol) return; [...ol.children].forEach((li,i) => { li.classList.toggle('done', i<now); li.classList.toggle('now', i===now); }); }
+  document.querySelectorAll('.chapters[data-now]').forEach(ol => setMap(ol, +ol.dataset.now));
+
+  const hooks = {
+    stop3(st, s){
+      setMap(s.querySelector('.chapters'), st < 1 ? 2 : st < 2 ? 3 : 4);
+      const shown = [...s.querySelectorAll('.idea')].filter(el => !el.classList.contains('pending'));
+      const m = shown.filter(el => el.dataset.from === 'maya').length, r = shown.length - m;
+      document.getElementById('tally-text').textContent = `Maya ${m} · Robot ${r}`;
+      document.getElementById('tb-maya').style.flexGrow = m;
+      document.getElementById('tb-robot').style.flexGrow = r;
+    }
+  };
+
+  function scrollChat(chat){
+    const turns = [...chat.querySelectorAll('.turn')].filter(t => !t.classList.contains('pending'));
+    const last = turns[turns.length-1];
+    const target = last ? Math.max(0, last.offsetTop + last.offsetHeight + 22 - chat.clientHeight) : 0;
+    try { chat.scrollTo({ top: target, behavior: reduce ? 'auto' : 'smooth' }); } catch(e) { chat.scrollTop = target; }
+  }
+
+  /* break timer */
+  const countEl = document.getElementById('count');
+  let breakTimer = null, breakEnd = 0;
+  function tick(){
+    const ms = Math.max(0, breakEnd - Date.now()), sec = Math.ceil(ms/1000);
+    countEl.textContent = `${Math.floor(sec/60)}:${String(sec%60).padStart(2,'0')}`;
+    countEl.classList.toggle('done', ms <= 0);
+    if (ms <= 0) { clearInterval(breakTimer); breakTimer = null; }
+  }
+  function startBreak(){ clearInterval(breakTimer); breakEnd = Date.now() + 240000; tick(); breakTimer = setInterval(tick, 250); }
+  function stopBreak(){ clearInterval(breakTimer); breakTimer = null; }
+  document.getElementById('restart').addEventListener('click', e => { startBreak(); e.currentTarget.blur(); });
+
+  function render(){
+    const slide = slides[cur];
+    const n = +slide.dataset.steps || 1;
+    step = Math.max(0, Math.min(step, n-1));
+    slides.forEach((s,i) => { s.classList.toggle('active', i===cur); s.setAttribute('aria-hidden', i===cur ? 'false' : 'true'); });
+    slide.querySelectorAll('[data-s],[data-until]').forEach(el => {
+      const a = el.dataset.s !== undefined ? +el.dataset.s : 0;
+      const b = el.dataset.until !== undefined ? +el.dataset.until : Infinity;
+      el.classList.toggle('pending', !(step >= a && step < b));
+    });
+    slide.querySelectorAll('[data-on]').forEach(el => el.classList.toggle('lit', step >= +el.dataset.on));
+    const r = slide.dataset.react, reacting = r !== undefined && step >= +r;
+    slide.classList.toggle('react', reacting);
+    const key = cur + ':' + reacting;
+    if (reacting && key !== lastReactKey){
+      const t = slide.querySelector('.react-timer span');
+      if (t){ t.classList.remove('run'); void t.offsetWidth; t.classList.add('run'); }
+    }
+    lastReactKey = key;
+    if (hooks[slide.dataset.id]) hooks[slide.dataset.id](step, slide);
+    slide.querySelectorAll('.chat').forEach(scrollChat);
+    if (cur !== lastCur){
+      if (ids[lastCur] === 'break') stopBreak();
+      if (slide.dataset.id === 'break') startBreak();
+      lastCur = cur;
+    }
+    updateControls(); renderNotes();
+    try { history.replaceState(null, '', '#' + slide.dataset.id); } catch(e) {}
+  }
+  function next(){ const n = +slides[cur].dataset.steps || 1; if (step < n-1) step++; else if (cur < slides.length-1){ cur++; step = 0; } render(); }
+  function prev(){ if (step > 0) step--; else if (cur > 0){ cur--; step = (+slides[cur].dataset.steps || 1) - 1; } render(); }
+  function go(i){ cur = Math.max(0, Math.min(slides.length-1, i)); step = 0; render(); }
+
+  /* ---------- fit stage to window ---------- */
+  function fit(){
+    const pad = 16, w = window.innerWidth, h = window.innerHeight;
+    const s = Math.max(.05, Math.min((w - pad*2)/1600, (h - pad*2)/900));
+    stage.style.transform = `translate(${(w-1600*s)/2}px, ${(h-900*s)/2}px) scale(${s})`;
+  }
+  window.addEventListener('resize', fit); fit();
+
+  /* ---------- controls ---------- */
+  const controls = document.getElementById('controls');
+  const pos = document.getElementById('pos');
+  const jump = document.getElementById('jump');
+  const notesEl = document.getElementById('notes');
+  const notesBtn = document.getElementById('notesBtn');
+  slides.forEach((s,i) => { const o = document.createElement('option'); o.value = i; o.textContent = s.dataset.label; jump.appendChild(o); });
+  function updateControls(){
+    const s = slides[cur], n = +s.dataset.steps || 1;
+    pos.textContent = n > 1 ? `${s.dataset.label} · ${step+1}/${n}` : s.dataset.label;
+    jump.value = cur;
+  }
+  document.getElementById('next').addEventListener('click', e => { next(); e.currentTarget.blur(); });
+  document.getElementById('prev').addEventListener('click', e => { prev(); e.currentTarget.blur(); });
+  jump.addEventListener('change', () => { go(+jump.value); jump.blur(); });
+  function toggleNotes(){ notesEl.hidden = !notesEl.hidden; notesBtn.classList.toggle('on', !notesEl.hidden); notesBtn.setAttribute('aria-pressed', String(!notesEl.hidden)); renderNotes(); }
+  notesBtn.addEventListener('click', e => { toggleNotes(); e.currentTarget.blur(); });
+  function toggleFS(){
+    try {
+      if (!document.fullscreenElement){ const p = document.documentElement.requestFullscreen && document.documentElement.requestFullscreen(); if (p && p.catch) p.catch(()=>{}); }
+      else { const p = document.exitFullscreen && document.exitFullscreen(); if (p && p.catch) p.catch(()=>{}); }
+    } catch(e) {}
+  }
+  document.getElementById('fsBtn').addEventListener('click', e => { toggleFS(); e.currentTarget.blur(); });
+
+  function renderNotes(){
+    if (notesEl.hidden) return;
+    const s = slides[cur], d = NOTES[s.dataset.id] || {};
+    const say = (d.say || []).map((t,i) => `<li class="${(d.say.length > 1 ? i===step : true) ? 'now' : ''}">${t}</li>`).join('');
+    const ask = (d.ask || []).map(t => `<li>${t}</li>`).join('');
+    notesEl.innerHTML = `<h2>${s.dataset.label}</h2><p class="meta">${d.time || ''}${d.mod && d.mod !== '—' ? ' · Modules: ' + d.mod : ''}</p>`
+      + (say ? `<h3>Demo driver</h3><ol>${say}</ol>` : '')
+      + (ask ? `<h3>Facilitator asks</h3><ul>${ask}</ul>` : '')
+      + (d.tip ? `<p class="tip">${d.tip}</p>` : '')
+      + `<p class="team">Team: cameras off. Don't explain or defend design choices. If someone misunderstands something, that's data. Close these notes before you share your screen.</p>`;
+  }
+
+  let idleT;
+  function wake(){
+    controls.classList.remove('idle'); clearTimeout(idleT);
+    idleT = setTimeout(() => { if (!controls.matches(':hover') && !controls.contains(document.activeElement)) controls.classList.add('idle'); }, 2600);
+  }
+  document.addEventListener('mousemove', wake);
+  document.addEventListener('touchstart', wake, { passive:true });
+
+  document.addEventListener('keydown', e => {
+    if (e.target.closest && e.target.closest('select,input,textarea')) return;
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    const k = e.key;
+    if (k === 'ArrowRight' || k === 'ArrowDown' || k === 'PageDown' || k === ' ' || k === 'Enter'){ e.preventDefault(); next(); }
+    else if (k === 'ArrowLeft' || k === 'ArrowUp' || k === 'PageUp' || k === 'Backspace'){ e.preventDefault(); prev(); }
+    else if (k === 'Home'){ e.preventDefault(); go(0); }
+    else if (k === 'End'){ e.preventDefault(); go(slides.length-1); }
+    else if (k === 'n' || k === 'N'){ toggleNotes(); }
+    else if (k === 'f' || k === 'F'){ toggleFS(); }
+  });
+
+  let tx = null;
+  document.getElementById('viewport').addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, { passive:true });
+  document.getElementById('viewport').addEventListener('touchend', e => {
+    if (tx === null) return; const dx = e.changedTouches[0].clientX - tx; tx = null;
+    if (Math.abs(dx) > 50) (dx < 0 ? next : prev)();
+  }, { passive:true });
+
+  const h = (location.hash || '').slice(1);
+  if (ids.includes(h)) cur = ids.indexOf(h);
+  render(); wake();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => slides[cur].querySelectorAll('.chat').forEach(scrollChat));
+})();
+</script>
+
+</body>
+</html>

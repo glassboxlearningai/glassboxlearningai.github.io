@@ -10,7 +10,10 @@ The live site is published with GitHub Pages from this repository.
 | --- | --- |
 | `index.html` | Project landing page: products, narrated videos, design themes, standards alignment, team |
 | `walkthrough/index.html` | *A Week with Maya*, the interactive walkthrough used in the October 2026 parent and teacher focus groups (arrow keys to step, F for full screen, N for presenter notes) |
-| `docs/` | PDFs of design documents (add as they are finalized) |
+| `prototypes/level-1-photo/` | Level 1 clickable wireframe: the robot works through a student's photo and hands back what it can't identify (late August to early September 2026) |
+| `prototypes/level-2-lotus/` | Level 2 clickable wireframe: function-based search and the lotus-leaf nature story (early September 2026) |
+| `prototypes/walkthrough-v1/` | First full walkthrough of Maya's week, four stops (September 30, 2026) |
+| `docs/` | PDFs: the Glass-Box design specification v1.0, a visual walkthrough of the prototypes, and the co-design process |
 | `.nojekyll` | Tells GitHub Pages to serve the files as they are |
 
 Narrated walkthrough videos are hosted on YouTube and linked from the landing page.
