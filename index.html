@@ -62,6 +62,7 @@ nav.links a:hover{color:var(--teal)}
 .card .kind{font:600 12px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--amber)}
 .card p{margin:0}
 .card .note{font-size:15px;color:var(--muted)}
+.std-note{font-size:14px;color:var(--muted);margin-top:12px}
 .card ul{margin:4px 0 0;padding-left:20px}
 .card .go{margin-top:auto;padding-top:10px;font-weight:700}
 
@@ -101,7 +102,7 @@ footer b{color:#fff}
   .contrast,.cards,.clips,.themes{grid-template-columns:1fr}
   .team{grid-template-columns:1fr 1fr}
 }
-@media (max-width:520px){ .team{grid-template-columns:1fr} h2{font-size:28px} }
+@media (max-width:520px){ .team{grid-template-columns:1fr} h2{font-size:28px} table{font-size:13px} th,td{padding:8px 6px;overflow-wrap:anywhere} th{font-size:10px;letter-spacing:.04em} }
 </style>
 </head>
 <body>
@@ -280,18 +281,19 @@ footer b{color:#fff}
   <div class="wrap">
     <p class="eyebrow">Standards</p>
     <h2>Aligned with middle school engineering design</h2>
-    <p class="lede">The "Biology to Design" lesson addresses the NGSS middle school engineering design standards and two NGSS crosscutting concepts, with Common Core literacy connections.</p>
+    <p class="lede">The "Biology to Design" lesson addresses the NGSS middle school engineering design standards and two NGSS crosscutting concepts, with Common Core literacy connections. Its AI literacy strand aligns with the AI4K12 Five Big Ideas and the AILit framework.</p>
     <table>
-      <thead><tr><th scope="col">Standard</th><th scope="col">How the lesson addresses it</th></tr></thead>
+      <thead><tr><th scope="col">Standard</th><th scope="col">How the lesson addresses it</th><th scope="col">AI literacy (AI4K12 grades 6-8; AILit)</th></tr></thead>
       <tbody>
-        <tr><td>Asking Questions and Defining Problems (MS-ETS1-1)</td><td>Students define a design problem by connecting a nature-inspired idea to a human need, with criteria and constraints shaped by scientific knowledge.</td></tr>
-        <tr><td>ETS1.A: Defining and Delimiting Engineering Problems (MS-ETS1-1)</td><td>Criteria and constraints shape each design; one required criterion is that the solution is bioinspired.</td></tr>
-        <tr><td>ETS1.B: Developing Possible Solutions (MS-ETS1-2, MS-ETS1-3)</td><td>Students evaluate their design concept against criteria and constraints, including how the biological function works.</td></tr>
-        <tr><td>Influence of Science, Engineering, and Technology on Society and the Natural World (MS-ETS1-1)</td><td>Designs respond to human needs and draw on the findings of scientific research.</td></tr>
-        <tr><td>Systems and System Models (crosscutting concept)</td><td>Students explain a living thing's ability as a system of interacting parts, then design their invention as a system that meets criteria and constraints.</td></tr>
-        <tr><td>Common Core ELA/Literacy</td><td>RST.6-8.1, RST.6-8.7, RST.6-8.9, WHST.6-8.7, WHST.6-8.8, WHST.6-8.9, SL.8.5</td></tr>
+        <tr><td>Asking Questions and Defining Problems (MS-ETS1-1)</td><td>Students define a design problem by connecting a nature-inspired idea to a human need, with criteria and constraints shaped by scientific knowledge.</td><td>AI4K12 5-A-i: students compare how human needs shape their designs with how stakeholders&#39; goals shape AI systems. AILit Engage with AI: students weigh the AI&#39;s questions and suggestions.</td></tr>
+        <tr><td>ETS1.A: Defining and Delimiting Engineering Problems (MS-ETS1-1)</td><td>Criteria and constraints shape each design; one required criterion is that the solution is bioinspired.</td><td>AI4K12 1-A-i, 1-A-ii: students contrast their own multisensory observation with the AI&#39;s camera-only sensing. AILit Manage AI: students decide which parts of the task the AI is suited for.</td></tr>
+        <tr><td>ETS1.B: Developing Possible Solutions (MS-ETS1-2, MS-ETS1-3)</td><td>Students evaluate their design concept against criteria and constraints, including how the biological function works.</td><td>AI4K12 2-A-iv: word embeddings explain how the AI matches a nature story to an idea; 3-C-iii: training data shapes what the AI suggests. AILit Engage with AI.</td></tr>
+        <tr><td>Influence of Science, Engineering, and Technology on Society and the Natural World (MS-ETS1-1)</td><td>Designs respond to human needs and draw on the findings of scientific research.</td><td>AI4K12 5-B-i, 5-C-ii: how AI is changing daily life and work, including people who build AI. AILit Shape AI.</td></tr>
+        <tr><td>Systems and System Models (crosscutting concept)</td><td>Students explain a living thing's ability as a system of interacting parts, then design their invention as a system that meets criteria and constraints.</td><td>AI4K12 1-B-iv, 3-B-i: the AI itself as a system of interacting parts, from feature detectors to a neural network. AILit Shape AI.</td></tr>
+        <tr><td>Common Core ELA/Literacy</td><td>RST.6-8.1, RST.6-8.7, RST.6-8.9, WHST.6-8.7, WHST.6-8.8, WHST.6-8.9, SL.8.5</td><td>AI4K12 1-B-iii: how a computer recognizes phrases from sequences of words. AILit Engage with AI: checking the sources behind an AI reply.</td></tr>
       </tbody>
     </table>
+    <p class="std-note">AI4K12 codes refer to grade 6-8 learning objectives in the <a href="https://ai4k12.org/gradeband-progression-charts/">AI4K12 progression charts</a>. AILit domains are from the <a href="https://ailiteracyframework.org/">AI Literacy Framework</a> of the European Commission and the OECD.</p>
   </div>
 </section>
 
