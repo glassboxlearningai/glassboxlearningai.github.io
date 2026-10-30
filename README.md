@@ -9,7 +9,7 @@ The live site is published with GitHub Pages from this repository.
 | Path | What it is |
 | --- | --- |
 | `index.html` | Project landing page: products, narrated videos, design themes, standards alignment, team |
-| `walkthrough/index.html` | *A Week with Maya*, the interactive walkthrough used in the October 2026 parent and teacher focus groups (arrow keys to step, F for full screen, N for presenter notes) |
+| `walkthrough/index.html` | *A Week with Maya*, the interactive walkthrough used in the parent and teacher focus groups (arrow keys to step, F for full screen, N for presenter notes) |
 | `prototypes/level-1-photo/` | Level 1 clickable wireframe: the robot works through a student's photo and hands back what it can't identify (late August to early September 2026) |
 | `prototypes/level-2-lotus/` | Level 2 clickable wireframe: function-based search and the lotus-leaf nature story (early September 2026) |
 | `prototypes/walkthrough-v1/` | First full walkthrough of Maya's week, four stops (September 30, 2026) |
@@ -22,7 +22,7 @@ Narrated walkthrough videos are hosted on YouTube and linked from the landing pa
 
 K-12 students increasingly use AI to offload their thinking. Most AI tools work as a black box: the answer appears, but the reasoning stays hidden. The *Glass-Box* framework designs a classroom AI that shows how it works, states its limits, and asks questions instead of supplying answers, inside a hands-on, nature-inspired engineering lesson for middle school.
 
-The framework was co-designed in weekly Agile sprints (August to October 2026) by K-12 teachers, a parent advocate, a biomimicry education expert, AI technologists, and education researchers, then reviewed by parents and teachers in focus groups conducted under UL Lafayette IRB approval IRB-26-104-CILAT.
+The framework was co-designed in weekly Agile sprints by K-12 teachers, a parent advocate, a biomimicry education expert, AI technologists, and education researchers, then reviewed by parents and teachers in focus groups conducted under UL Lafayette IRB approval IRB-26-104-CILAT.
 
 ## Team
 
@@ -37,10 +37,6 @@ The framework was co-designed in weekly Agile sprints (August to October 2026) b
 ## What does not go in this repository
 
 Focus group recordings, transcripts, chat logs, and survey responses are research data covered by IRB-26-104-CILAT. They are not stored here.
-
-## Archiving
-
-Versioned releases of this repository will be archived on Figshare with a DOI, as described in the project's Data Management and Sharing Plan.
 
 ## License
 
