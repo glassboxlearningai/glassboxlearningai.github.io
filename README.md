@@ -22,7 +22,7 @@ Narrated walkthrough videos are hosted on YouTube and linked from the landing pa
 
 K-12 students increasingly use AI to offload their thinking. Most AI tools work as a black box: the answer appears, but the reasoning stays hidden. The *Glass-Box* framework designs a classroom AI that shows how it works, states its limits, and asks questions instead of supplying answers, inside a hands-on, nature-inspired engineering lesson for middle school.
 
-The framework was co-designed in weekly Agile sprints by K-12 teachers, a parent advocate, a biomimicry education expert, AI technologists, and education researchers, then reviewed by parents and teachers in focus groups conducted under UL Lafayette IRB approval IRB-26-104-CILAT.
+The framework was co-designed in weekly Agile sprints by K-12 teachers, a parent advocate, engineering education experts, AI technologists, and education researchers, then reviewed by parents and teachers in focus groups conducted under UL Lafayette IRB approval IRB-26-104-CILAT.
 
 ## Team
 
